@@ -1,0 +1,2471 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Archivio</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%232c3e50%22/><text x=%2250%22 y=%2268%22 font-size=%2255%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Georgia%22>A</text></svg>">
+<style>
+/* ============================================================
+   Archivio — piattaforma unificata Plaud + Claude
+   Palette e tipografia derivate dalla shell "Archivio Plaud".
+   Due famiglie di colore costanti per la fonte:
+     Plaud  = blu   (registrazioni)
+     Claude = arancio (chat / progetti / design)
+   ============================================================ */
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-2: #f4f3f0;
+  --ink-1: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --baseline: #c3c2b7;
+  --border: rgba(11,11,11,0.10);
+  --accent: #2a78d6;
+  --accent-soft: #cde2fb;
+  --accent-dark: #1c5cab;
+  --chip-bg: #f0efec;
+  --mark-bg: #fde9b8;
+  --cite: #ffe36e;
+  --cite-row: #fff3c2;
+  --shadow: 0 2px 10px rgba(0,0,0,0.08);
+  /* fonte: Plaud */
+  --plaud: #2a78d6;
+  --plaud-bg: #e4eefb;
+  --plaud-bd: #b9d4f5;
+  --plaud-ink: #1a5391;
+  /* fonte: Claude */
+  --claude: #d2601f;
+  --claude-bg: #fbe9dd;
+  --claude-bd: #f0c5a6;
+  --claude-ink: #964313;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-2: #232322;
+    --ink-1: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --baseline: #383835;
+    --border: rgba(255,255,255,0.10);
+    --accent: #3987e5;
+    --accent-soft: #104281;
+    --accent-dark: #86b6ef;
+    --chip-bg: #2c2c2a;
+    --mark-bg: #5a4a12;
+    --cite: #6b5a12;
+    --cite-row: #3a351a;
+    --shadow: 0 2px 12px rgba(0,0,0,0.45);
+    --plaud: #4a92e8;
+    --plaud-bg: #12314f;
+    --plaud-bd: #1e4f7d;
+    --plaud-ink: #9cc8f7;
+    --claude: #e07a3e;
+    --claude-bg: #43220f;
+    --claude-bd: #74391a;
+    --claude-ink: #f0ac7e;
+  }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  background: var(--page);
+  color: var(--ink-1);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+.hidden { display: none !important; }
+a { color: var(--accent-dark); }
+
+/* ---------- schermata passphrase ---------- */
+#gate {
+  position: fixed; inset: 0; z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; background: var(--page);
+}
+#gateCard {
+  width: 100%; max-width: 380px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 12px; padding: 26px 24px 22px 24px;
+  box-shadow: var(--shadow);
+}
+#gateCard h1 { margin: 0 0 4px 0; font-size: 24px; font-weight: 650; letter-spacing: -0.01em; }
+#gateCard .sub { color: var(--ink-2); font-size: 13px; margin-bottom: 18px; }
+#gateCard label.fld { display: block; font-size: 12.5px; color: var(--ink-2); margin-bottom: 5px; }
+#pass {
+  width: 100%; font: inherit; font-size: 15px; padding: 10px 12px;
+  border: 1px solid var(--baseline); border-radius: 8px;
+  background: var(--page); color: var(--ink-1);
+}
+#pass:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+.gate-row { display: flex; align-items: center; gap: 7px; margin: 12px 0 16px 0; font-size: 13px; color: var(--ink-2); }
+#gateGo {
+  width: 100%; appearance: none; border: none; border-radius: 8px;
+  background: var(--accent); color: #fff; font: inherit; font-size: 15px; font-weight: 600;
+  padding: 11px 16px; cursor: pointer;
+}
+#gateGo:hover { background: var(--accent-dark); }
+#gateGo:disabled { opacity: 0.6; cursor: default; }
+#gateMsg { font-size: 13px; margin-top: 12px; min-height: 18px; color: var(--ink-2); }
+#gateMsg.err { color: #c0392b; }
+@media (prefers-color-scheme: dark) { #gateMsg.err { color: #ff8a75; } }
+.gate-legend { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--grid); font-size: 12px; color: var(--muted); }
+.gate-legend .src { margin-right: 6px; }
+
+/* ---------- barra di avanzamento ---------- */
+.bar-wrap { height: 6px; background: var(--surface-2); border-radius: 4px; overflow: hidden; margin-top: 12px; }
+.bar-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.18s linear; }
+
+/* ---------- struttura applicazione ---------- */
+#app { display: block; }
+#sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: 236px; z-index: 120;
+  background: var(--surface); border-right: 1px solid var(--grid);
+  display: flex; flex-direction: column; padding: 18px 0 10px 0;
+  transition: transform 0.2s ease;
+}
+.brand { padding: 0 18px; }
+.brand .nm { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; }
+.brand .sb { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+#nav { margin-top: 18px; flex: 1; overflow-y: auto; padding: 0 10px; }
+#nav button {
+  display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px;
+  appearance: none; border: none; background: none; font: inherit; font-size: 14px;
+  color: var(--ink-2); text-align: left; padding: 8px 10px; border-radius: 7px; cursor: pointer;
+  border-left: 3px solid transparent; margin-bottom: 1px;
+}
+#nav button:hover { background: var(--surface-2); color: var(--ink-1); }
+#nav button.active { background: var(--surface-2); color: var(--ink-1); font-weight: 600; border-left-color: var(--accent); }
+#nav button .n { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 400; }
+.side-foot { padding: 10px 16px 0 16px; border-top: 1px solid var(--grid); font-size: 11.5px; color: var(--muted); }
+.side-foot .cnt-src { margin: 6px 0 8px 0; }
+#lockBtn {
+  appearance: none; border: 1px solid var(--baseline); background: var(--surface);
+  color: var(--ink-2); border-radius: 7px; font: inherit; font-size: 12.5px;
+  padding: 6px 10px; cursor: pointer; width: 100%;
+}
+#lockBtn:hover { border-color: var(--accent); color: var(--ink-1); }
+#scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 110; }
+#topbar {
+  position: sticky; top: 0; z-index: 60; display: none;
+  background: var(--surface); border-bottom: 1px solid var(--grid);
+  padding: 10px 14px; align-items: center; gap: 12px;
+}
+#menuBtn {
+  appearance: none; border: 1px solid var(--baseline); background: var(--surface); color: var(--ink-1);
+  border-radius: 7px; padding: 5px 9px; cursor: pointer; line-height: 1;
+}
+#topbar .ttl { font-size: 15px; font-weight: 600; }
+main { margin-left: 236px; }
+.wrap { max-width: 1020px; margin: 0 auto; padding: 26px 26px 90px 26px; }
+h1.view-h { font-size: 21px; margin: 0 0 3px 0; font-weight: 650; letter-spacing: -0.01em; }
+.view-note { color: var(--ink-2); font-size: 13px; margin-bottom: 18px; max-width: 74ch; }
+
+/* ---------- badge fonte (elemento chiave dell'interfaccia) ---------- */
+.src {
+  display: inline-flex; align-items: center; gap: 5px; vertical-align: middle;
+  font-size: 11px; font-weight: 650; letter-spacing: 0.015em; line-height: 1.5;
+  padding: 1px 8px 1px 7px; border-radius: 20px; border: 1px solid transparent; white-space: nowrap;
+}
+.src::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+.src .sub { font-weight: 600; font-size: 10.5px; opacity: 0.9; padding-left: 5px; margin-left: 1px; border-left: 1px solid currentColor; }
+.src-plaud { background: var(--plaud-bg); color: var(--plaud-ink); border-color: var(--plaud-bd); }
+.src-claude { background: var(--claude-bg); color: var(--claude-ink); border-color: var(--claude-bd); }
+.st-prog::before { border-radius: 2px; }
+.st-design::before { background: transparent; box-shadow: inset 0 0 0 2px currentColor; }
+.src.lg { font-size: 12px; padding: 3px 10px 3px 9px; }
+
+/* contatori per fonte */
+.cnt-src { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.mini {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
+  padding: 1px 7px; border-radius: 20px; border: 1px solid transparent; white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.mini::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+.m-plaud { background: var(--plaud-bg); color: var(--plaud-ink); border-color: var(--plaud-bd); }
+.m-claude { background: var(--claude-bg); color: var(--claude-ink); border-color: var(--claude-bd); }
+.m-prog::before { border-radius: 1px; }
+.m-design::before { background: transparent; box-shadow: inset 0 0 0 2px currentColor; }
+.mini .lbl { font-weight: 500; opacity: 0.95; }
+
+/* ---------- riquadri, schede, elenchi ---------- */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); gap: 12px; margin-bottom: 22px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+.tile .v { font-size: 25px; font-weight: 650; line-height: 1.15; letter-spacing: -0.01em; }
+.tile .v.sm { font-size: 17px; }
+.tile .l { font-size: 12.5px; color: var(--ink-2); margin-top: 2px; }
+.tile .x { margin-top: 8px; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; margin-bottom: 20px; }
+.panel h2 { margin: 0 0 4px 0; font-size: 16px; }
+.panel .note { color: var(--ink-2); font-size: 13px; margin-bottom: 10px; }
+.panel.flat { background: none; border: none; padding: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(238px, 1fr)); gap: 12px; }
+.grid.wide { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px; cursor: pointer; text-align: left; font: inherit; color: inherit; width: 100%;
+  display: block;
+}
+.card:hover { border-color: var(--accent); }
+.card .n { font-weight: 600; font-size: 14.5px; }
+.card .c { color: var(--ink-2); font-size: 12.5px; margin-top: 3px; }
+.card .d { color: var(--ink-2); font-size: 12.5px; margin-top: 7px; }
+.card .x { margin-top: 8px; }
+
+.rec {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 11px 14px; margin-bottom: 8px; cursor: pointer; position: relative;
+  border-left-width: 3px; border-left-style: solid;
+}
+.rec.f-plaud { border-left-color: var(--plaud); }
+.rec.f-claude { border-left-color: var(--claude); }
+.rec:hover { border-color: var(--accent); border-left-color: var(--accent); }
+.rec .hd { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.rec .t { font-weight: 600; font-size: 14.5px; flex: 1 1 240px; min-width: 0; }
+.rec .m { color: var(--ink-2); font-size: 12.5px; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 3px 12px; align-items: center; }
+.rec .snip { font-size: 13px; color: var(--ink-2); margin-top: 6px; overflow-wrap: anywhere; }
+.rec .th { margin-top: 6px; }
+mark { background: var(--mark-bg); color: inherit; border-radius: 2px; padding: 0 1px; }
+mark.cite { background: var(--cite); }
+.chip {
+  display: inline-block; background: var(--chip-bg); border-radius: 20px;
+  padding: 1px 9px; font-size: 11.5px; color: var(--ink-2); margin: 0 4px 3px 0;
+  border: 1px solid transparent;
+}
+.chip.accent { background: var(--accent-soft); color: var(--ink-1); }
+.chip.click { cursor: pointer; }
+.chip.click:hover { border-color: var(--accent); color: var(--ink-1); }
+.chip.fonte { background: var(--surface); border-color: var(--baseline); }
+.rec-group h3 {
+  font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--muted); margin: 24px 0 8px 2px; font-weight: 600;
+}
+.rec-group h3 .cnt { font-weight: 400; text-transform: none; letter-spacing: 0; }
+.day-h {
+  font-size: 13.5px; color: var(--ink-1); font-weight: 600;
+  margin: 16px 0 7px 0; padding-left: 9px; border-left: 3px solid var(--accent);
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+.day-h .cnt { color: var(--muted); font-weight: 400; font-size: 12.5px; }
+.empty { color: var(--muted); font-size: 13.5px; padding: 10px 2px; }
+.backlink {
+  color: var(--accent-dark); font-size: 13.5px; cursor: pointer; margin-bottom: 12px;
+  display: inline-block; background: none; border: none; font-family: inherit; padding: 0;
+}
+.backlink:hover { text-decoration: underline; }
+.more-btn {
+  appearance: none; border: 1px solid var(--baseline); background: var(--surface); color: var(--ink-1);
+  border-radius: 8px; font: inherit; font-size: 13.5px; padding: 8px 14px; cursor: pointer;
+  margin: 6px 0 14px 0; width: 100%;
+}
+.more-btn:hover { border-color: var(--accent); }
+
+/* ---------- controlli ---------- */
+.tools { display: flex; gap: 10px 14px; align-items: center; flex-wrap: wrap; font-size: 13.5px; color: var(--ink-2); margin-bottom: 12px; }
+.tools label { display: flex; align-items: center; gap: 5px; }
+select, input[type=text], input[type=search], textarea {
+  font: inherit; font-size: 13.5px; padding: 7px 9px; border: 1px solid var(--baseline);
+  border-radius: 8px; background: var(--surface); color: var(--ink-1); max-width: 100%;
+}
+input[type=search] { -webkit-appearance: none; appearance: none; }
+.btn {
+  appearance: none; border: 1px solid var(--baseline); background: var(--surface); color: var(--ink-1);
+  border-radius: 8px; font: inherit; font-size: 13px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { background: var(--accent-dark); }
+.btn:disabled { opacity: 0.55; cursor: default; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.seg button {
+  appearance: none; border: 1px solid var(--baseline); background: var(--surface); color: var(--ink-2);
+  border-radius: 20px; font: inherit; font-size: 12.5px; padding: 4px 12px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.seg button:hover { color: var(--ink-1); }
+.seg button.on { background: var(--ink-1); border-color: var(--ink-1); color: var(--page); font-weight: 600; }
+.seg button .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.seg button .dot.plaud { background: var(--plaud); }
+.seg button .dot.claude { background: var(--claude); }
+.seg button.on .dot { box-shadow: 0 0 0 1px var(--page); }
+
+/* ---------- grafico ---------- */
+#chartWrap { position: relative; }
+#chart { width: 100%; height: 200px; display: block; }
+.tipbox {
+  position: absolute; pointer-events: none; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px;
+  font-size: 12.5px; box-shadow: var(--shadow); display: none; white-space: nowrap; z-index: 5;
+}
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); margin-bottom: 8px; }
+.legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+
+/* ---------- mappa mentale ---------- */
+#mapWrap { position: relative; }
+#mindmap { width: 100%; display: block; cursor: grab; background: var(--surface); border-radius: 8px; touch-action: none; }
+#mindmap.dragging { cursor: grabbing; }
+.mm-node { cursor: pointer; }
+.mm-dim { opacity: 0.12; }
+.mm-label { fill: var(--ink-2); pointer-events: none; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+.mm-label.big { fill: var(--ink-1); font-weight: 600; stroke-width: 4px; }
+
+/* ---------- report ---------- */
+.rep-sec { font-size: 15.5px; margin: 22px 0 6px 0; }
+.rep-p { font-size: 14px; margin: 8px 0 14px 0; }
+.rep-p .fonti { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+.chip.fonte .src { margin-right: 5px; }
+.chip.fonte { display: inline-flex; align-items: center; gap: 2px; padding: 2px 9px 2px 4px; }
+.callout { background: var(--accent-soft); border-radius: 8px; padding: 11px 14px; font-size: 13px; color: var(--ink-1); margin-bottom: 18px; }
+
+/* ---------- dettaglio ---------- */
+#overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200;
+  display: flex; justify-content: center; align-items: flex-start; padding: 26px 16px;
+  overscroll-behavior: contain;
+}
+#detail {
+  background: var(--surface); border-radius: 10px; max-width: 880px; width: 100%;
+  max-height: calc(100vh - 52px); overflow-y: auto; border: 1px solid var(--border);
+  box-shadow: var(--shadow); -webkit-overflow-scrolling: touch;
+}
+#detailHead {
+  position: sticky; top: 0; background: var(--surface); z-index: 3;
+  padding: 18px 24px 10px 24px; border-bottom: 1px solid var(--grid);
+}
+#detailBody { padding: 16px 24px 30px 24px; }
+#detailHead h2 { margin: 6px 0 6px 0; font-size: 18px; padding-right: 20px; line-height: 1.32; }
+#closeDetail {
+  float: right; appearance: none; border: 1px solid var(--border); background: var(--surface);
+  border-radius: 6px; font: inherit; font-size: 13px; padding: 4px 10px; cursor: pointer; color: var(--ink-2);
+}
+#closeDetail:hover { color: var(--ink-1); border-color: var(--accent); }
+.meta { color: var(--ink-2); font-size: 13px; }
+.meta b { color: var(--ink-1); font-weight: 600; }
+.dsec { margin-top: 18px; }
+.dsec > h3 {
+  font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+  margin: 0 0 7px 0; font-weight: 600;
+}
+.sum { background: var(--surface-2); border-radius: 8px; padding: 12px 16px; }
+.sum h3, .sum h4 { font-size: 14.5px; margin: 12px 0 4px 0; }
+.sum h3:first-child, .sum h4:first-child { margin-top: 0; }
+.sum p, .sum li { font-size: 14px; margin: 6px 0; }
+.sum ul { margin: 6px 0; padding-left: 20px; }
+.sum blockquote { border-left: 3px solid var(--grid); margin: 8px 0; padding: 2px 12px; color: var(--ink-2); }
+.utt { display: flex; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--grid); font-size: 13.5px; }
+.utt .ts { color: var(--muted); min-width: 52px; font-variant-numeric: tabular-nums; }
+.utt .sp { color: var(--plaud-ink); min-width: 104px; font-weight: 600; }
+.utt .tx { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.utt.cite { background: var(--cite-row); }
+.msg { margin-bottom: 12px; display: flex; flex-direction: column; }
+.msg .who { font-size: 11.5px; font-weight: 650; color: var(--muted); margin-bottom: 3px; letter-spacing: 0.02em; }
+.msg .bub {
+  border-radius: 10px; padding: 10px 13px; font-size: 13.8px; max-width: 88%;
+  overflow-wrap: anywhere; white-space: pre-wrap;
+}
+.msg.h { align-items: flex-end; }
+.msg.h .bub { background: var(--accent-soft); color: var(--ink-1); border-bottom-right-radius: 3px; }
+.msg.h .who { align-self: flex-end; }
+.msg.a .bub { background: var(--surface-2); border: 1px solid var(--border); border-bottom-left-radius: 3px; white-space: normal; }
+.msg.a .bub p, .msg.a .bub li { font-size: 13.8px; margin: 6px 0; }
+.msg.a .bub h3, .msg.a .bub h4 { font-size: 14.2px; margin: 10px 0 4px 0; }
+.msg.a .bub ul { margin: 6px 0; padding-left: 20px; }
+.msg.att .bub, .msg.file .bub {
+  background: var(--surface); border: 1px dashed var(--baseline); color: var(--ink-2);
+  font-size: 13px; max-width: 100%; white-space: normal;
+}
+.att-name { font-weight: 600; color: var(--ink-1); font-size: 13px; }
+.doc {
+  border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; background: var(--surface);
+}
+.doc > .dh {
+  display: flex; gap: 10px; align-items: baseline; padding: 10px 13px; cursor: pointer; font-size: 13.5px;
+}
+.doc > .dh .nm { font-weight: 600; flex: 1; overflow-wrap: anywhere; }
+.doc > .dh .sz { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.doc > .dh .tg { color: var(--accent-dark); font-size: 12.5px; }
+.doc > .dc { padding: 0 13px 12px 13px; font-size: 13.3px; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink-2); border-top: 1px solid var(--grid); padding-top: 10px; }
+.load-line { color: var(--muted); font-size: 13px; padding: 8px 0; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  #sidebar { transform: translateX(-100%); box-shadow: var(--shadow); width: 260px; }
+  #sidebar.open { transform: translateX(0); }
+  main { margin-left: 0; }
+  #topbar { display: flex; }
+  .wrap { padding: 18px 16px 90px 16px; }
+  #detail { max-height: calc(100vh - 32px); }
+  #overlay { padding: 16px 8px; }
+  #detailHead { padding: 14px 16px 10px 16px; }
+  #detailBody { padding: 14px 16px 28px 16px; }
+  .msg .bub { max-width: 94%; }
+  .utt { flex-wrap: wrap; gap: 4px 10px; }
+  .utt .sp { min-width: 0; }
+  h1.view-h { font-size: 19px; }
+}
+@media (min-width: 901px) { #scrim { display: none !important; } }
+</style>
+</head>
+<body>
+<!-- ============ schermata passphrase ============ -->
+<div id="gate">
+  <div id="gateCard">
+    <h1>Archivio</h1>
+    <div class="sub">Registrazioni Plaud e conversazioni Claude in un unico archivio cifrato.</div>
+    <form id="gateForm" autocomplete="off">
+      <label class="fld" for="pass">Passphrase</label>
+      <input type="password" id="pass" autocomplete="current-password" spellcheck="false" autocapitalize="off">
+      <div class="gate-row">
+        <input type="checkbox" id="remember">
+        <label for="remember">Ricorda su questo dispositivo</label>
+      </div>
+      <button type="submit" id="gateGo">Entra</button>
+    </form>
+    <div class="bar-wrap hidden" id="gateBarWrap"><div class="bar-fill" id="gateBar"></div></div>
+    <div id="gateMsg"></div>
+    <div class="gate-legend">
+      Le due fonti dell'archivio:
+      <div style="margin-top:7px">
+        <span class="src src-plaud">Plaud</span>
+        <span class="src src-claude">Claude<span class="sub">Chat</span></span>
+        <span class="src src-claude st-prog">Claude<span class="sub">Progetto</span></span>
+        <span class="src src-claude st-design">Claude<span class="sub">Design</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ applicazione ============ -->
+<div id="app" class="hidden">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="nm">Archivio</div>
+      <div class="sb">Plaud + Claude</div>
+    </div>
+    <nav id="nav">
+      <button data-view="home" class="active"><span>Panoramica</span></button>
+      <button data-view="soggetti"><span>Soggetti</span><span class="n" id="navSog"></span></button>
+      <button data-view="progetti"><span>Progetti</span><span class="n" id="navPrj"></span></button>
+      <button data-view="temi"><span>Temi</span><span class="n" id="navTemi"></span></button>
+      <button data-view="data"><span>Per data</span><span class="n" id="navData"></span></button>
+      <button data-view="ricerca"><span>Ricerca</span></button>
+      <button data-view="mappa"><span>Mappa</span></button>
+      <button data-view="report"><span>Report</span><span class="n" id="navRep"></span></button>
+    </nav>
+    <div class="side-foot">
+      <div id="sideCounts" class="cnt-src"></div>
+      <div id="sideRange" style="margin-bottom:9px"></div>
+      <button id="lockBtn">Blocca archivio</button>
+      <div style="margin-top:8px;font-size:11px;line-height:1.45">I dati restano cifrati sul server: la chiave non lascia questo dispositivo.</div>
+    </div>
+  </aside>
+  <div id="scrim" class="hidden"></div>
+
+  <main>
+    <div id="topbar">
+      <button id="menuBtn" aria-label="Apri il menu">
+        <svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><g fill="currentColor"><rect y="0" width="18" height="2" rx="1"/><rect y="6" width="18" height="2" rx="1"/><rect y="12" width="18" height="2" rx="1"/></g></svg>
+      </button>
+      <div class="ttl" id="topTitle">Panoramica</div>
+    </div>
+    <div class="wrap">
+
+      <!-- ---------- 1. Panoramica ---------- -->
+      <section id="view-home" class="view">
+        <h1 class="view-h">Panoramica</h1>
+        <div class="view-note" id="homeIntro"></div>
+        <div class="tiles" id="homeTiles"></div>
+        <div class="panel">
+          <h2>Contenuti per mese</h2>
+          <div class="note">Distribuzione mensile dei contenuti, con le due fonti sovrapposte.</div>
+          <div class="legend">
+            <span><span class="dot" style="background:var(--plaud)"></span>Plaud — registrazioni</span>
+            <span><span class="dot" style="background:var(--claude)"></span>Claude — chat, progetti, design</span>
+          </div>
+          <div id="chartWrap"><svg id="chart" aria-hidden="true"></svg><div id="chartTip" class="tipbox"></div></div>
+        </div>
+        <div class="panel">
+          <h2>Ultimi contenuti</h2>
+          <div class="note">I dieci contenuti più recenti dell'archivio, di qualunque fonte.</div>
+          <div id="homeLast"></div>
+        </div>
+        <div class="panel">
+          <h2>Soggetti principali</h2>
+          <div class="note">Accesso rapido ai soggetti con più contenuti. Il numero distingue sempre le due fonti.</div>
+          <div class="grid" id="homeSog"></div>
+        </div>
+        <div class="panel">
+          <h2>Macro-filoni tematici</h2>
+          <div class="note" id="homeMacroNote"></div>
+          <div class="grid" id="homeMacro"></div>
+        </div>
+      </section>
+
+      <!-- ---------- 2. Soggetti ---------- -->
+      <section id="view-soggetti" class="view hidden">
+        <div id="sogIndex">
+          <h1 class="view-h">Soggetti</h1>
+          <div class="view-note">I soggetti sono i temi-cliente e le aree di vita a cui ogni contenuto è stato ricondotto. Ogni scheda mostra quante registrazioni Plaud e quanti contenuti Claude riguardano quel soggetto.</div>
+          <div class="tools">
+            <label>Ordina per
+              <select id="sogSort">
+                <option value="cnt">numero di contenuti</option>
+                <option value="rec">contenuto più recente</option>
+                <option value="alf">ordine alfabetico</option>
+              </select>
+            </label>
+            <span id="sogCount" style="color:var(--muted)"></span>
+          </div>
+          <div class="grid" id="sogGrid"></div>
+        </div>
+        <div id="sogDetail" class="hidden"></div>
+      </section>
+
+      <!-- ---------- 3. Progetti ---------- -->
+      <section id="view-progetti" class="view hidden">
+        <div id="prjIndex">
+          <h1 class="view-h">Progetti</h1>
+          <div class="view-note">I progetti Claude: ognuno raccoglie i documenti caricati nel progetto e le conversazioni svolte al suo interno. Sono inclusi anche i progetti ancora senza documenti.</div>
+          <div class="tools">
+            <label>Ordina per
+              <select id="prjSort">
+                <option value="cnt">numero di contenuti</option>
+                <option value="rec">attività più recente</option>
+                <option value="alf">ordine alfabetico</option>
+              </select>
+            </label>
+            <span id="prjCount" style="color:var(--muted)"></span>
+          </div>
+          <div class="grid wide" id="prjGrid"></div>
+        </div>
+        <div id="prjDetail" class="hidden"></div>
+      </section>
+
+      <!-- ---------- 4. Temi ---------- -->
+      <section id="view-temi" class="view hidden">
+        <div id="temiIndex">
+          <h1 class="view-h">Temi</h1>
+          <div class="view-note" id="temiIntro"></div>
+          <div class="grid wide" id="macroGrid"></div>
+        </div>
+        <div id="macroDetail" class="hidden"></div>
+        <div id="temaDetail" class="hidden"></div>
+      </section>
+
+      <!-- ---------- 5. Per data ---------- -->
+      <section id="view-data" class="view hidden">
+        <h1 class="view-h">Per data</h1>
+        <div class="view-note">Cronologia completa dell'archivio, dal contenuto più recente al più antico.</div>
+        <div class="panel">
+          <div class="tools" style="margin-bottom:0">
+            <div class="seg" id="dataSrc"></div>
+            <label>Periodo
+              <select id="dataPeriod">
+                <option value="all">tutto l'archivio</option>
+                <option value="30">ultimi 30 giorni</option>
+                <option value="90">ultimi 90 giorni</option>
+                <option value="365">ultimi 12 mesi</option>
+              </select>
+            </label>
+            <label>Anno
+              <select id="dataYear"><option value="">tutti</option></select>
+            </label>
+            <span id="dataCount" style="color:var(--muted)"></span>
+          </div>
+        </div>
+        <div id="dataList"></div>
+      </section>
+
+      <!-- ---------- 6. Ricerca ---------- -->
+      <section id="view-ricerca" class="view hidden">
+        <h1 class="view-h">Ricerca</h1>
+        <div class="view-note">La ricerca trova solo <b>parole intere</b>: cercando <i>sop</i> non compaiono i risultati di <i>soprattutto</i>. Maiuscole e accenti sono ignorati. Con più parole vengono mostrati i contenuti che le contengono tutte.</div>
+        <div class="panel">
+          <div class="tools">
+            <input type="search" id="q" placeholder="Cerca una parola o un nome..." style="flex:1 1 300px" autocomplete="off" spellcheck="false">
+            <div class="seg" id="qSrc"></div>
+          </div>
+          <div class="tools" style="margin-bottom:0">
+            <button class="btn" id="qFull">Estendi ai testi integrali</button>
+            <label id="qFullOnWrap" class="hidden"><input type="checkbox" id="qFullOn" checked> Cerca anche nei testi integrali</label>
+            <span id="qFullMsg" style="color:var(--muted);font-size:12.5px"></span>
+          </div>
+          <div class="bar-wrap hidden" id="qBarWrap"><div class="bar-fill" id="qBar"></div></div>
+        </div>
+        <div id="qCount" style="color:var(--muted);font-size:13px;margin:0 2px 14px 2px"></div>
+        <div id="qResults"></div>
+      </section>
+
+      <!-- ---------- 7. Mappa ---------- -->
+      <section id="view-mappa" class="view hidden">
+        <h1 class="view-h">Mappa</h1>
+        <div class="view-note">Mappa a espansione progressiva: dalla radice ai dieci macro-filoni, dai filoni ai temi, dai temi ai singoli contenuti. Clic su un filone per aprirne i temi, clic su un tema per aprirne i contenuti, clic su un contenuto per leggerlo. Doppio clic su un tema per aprirne la pagina.</div>
+        <div class="panel">
+          <div class="tools">
+            <button class="btn" id="mmExpand">Espandi tutti i filoni</button>
+            <button class="btn" id="mmCollapse">Comprimi tutto</button>
+            <button class="btn" id="mmReset">Ricentra</button>
+          </div>
+          <div class="legend">
+            <span><span class="dot" style="background:var(--ink-1)"></span>Radice</span>
+            <span><span class="dot" style="background:var(--accent)"></span>Macro-filone</span>
+            <span><span class="dot" style="background:var(--surface);outline:2px solid var(--accent);outline-offset:-2px"></span>Tema</span>
+            <span><span class="dot" style="background:var(--plaud)"></span>Contenuto Plaud</span>
+            <span><span class="dot" style="background:var(--claude)"></span>Contenuto Claude</span>
+          </div>
+          <div id="mapWrap"><svg id="mindmap"></svg><div id="mapTip" class="tipbox"></div></div>
+        </div>
+      </section>
+
+      <!-- ---------- 8. Report ---------- -->
+      <section id="view-report" class="view hidden">
+        <div id="repIndex">
+          <h1 class="view-h">Report</h1>
+          <div class="view-note">Report professionali costruiti sull'intero archivio. Ogni passaggio cita le sue fonti: un clic apre il contenuto originale con il brano usato evidenziato in giallo.</div>
+          <div class="callout">I nuovi report si chiedono a Claude in una sessione Cowork: una volta prodotti vengono aggiunti qui, dentro l'archivio cifrato, e saranno consultabili da qualunque dispositivo.</div>
+          <div id="repList"></div>
+        </div>
+        <div id="repView" class="hidden"></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ============ dettaglio contenuto ============ -->
+<div id="overlay" class="hidden">
+  <div id="detail" role="dialog" aria-modal="true">
+    <div id="detailHead"><button id="closeDetail">Chiudi</button><div id="detailHeadBody"></div></div>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ==========================================================================
+   1. UTILITÀ DI BASE
+   ========================================================================== */
+const $ = (id) => document.getElementById(id);
+const DATA_DIR = './data/';
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function escRe(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function plural(n, sing, plur) { return n === 1 ? sing : plur; }
+function trunc(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+
+/* Normalizzazione per la ricerca: minuscole + accenti rimossi, MANTENENDO
+   la lunghezza della stringa (serve a mappare gli indici sui testi originali). */
+const FOLD_TBL = {};
+(function () {
+  const src = 'ÀÁÂÃÄÅàáâãäåÈÉÊËèéêëÌÍÎÏìíîïÒÓÔÕÖØòóôõöøÙÚÛÜùúûüÝýÿÑñÇçŠšŽžĠġİı';
+  const dst = 'aaaaaaaaaaaaeeeeeeeeiiiiiiiioooooooooooouuuuuuuuyyynnccsszzggii';
+  for (let i = 0; i < src.length; i++) FOLD_TBL[src[i]] = dst[i];
+})();
+function fold(s) {
+  return String(s == null ? '' : s)
+    .replace(/[A-Z]/g, (c) => c.toLowerCase())
+    .replace(/[À-ɏ]/g, (c) => FOLD_TBL[c] || (c.toLowerCase().length === 1 ? c.toLowerCase() : c));
+}
+/* Espressione regolare "parola intera": niente lookbehind (compatibilità Safari). */
+function wordRe(term, flags) {
+  return new RegExp('(^|[^\\p{L}\\p{N}])(' + escRe(term) + ')(?![\\p{L}\\p{N}])', flags);
+}
+function hasWord(foldedText, term) {
+  if (!foldedText) return false;
+  const re = wordRe(term, 'u');
+  return re.test(foldedText);
+}
+/* Evidenzia i termini in un testo (già escapato per l'HTML). */
+function markTerms(rawText, terms) {
+  let html = esc(rawText);
+  terms.forEach((t) => {
+    const re = new RegExp('(^|[^\\p{L}\\p{N}])(' + escRe(t) + ')(?![\\p{L}\\p{N}])', 'giu');
+    html = html.replace(re, (m, p1, p2) => p1 + '<mark>' + p2 + '</mark>');
+  });
+  return html;
+}
+/* Estrae uno snippet attorno alla prima occorrenza di un termine. */
+function snippetAround(raw, folded, terms, before, after) {
+  before = before || 90; after = after || 150;
+  let best = -1, len = 0;
+  for (const t of terms) {
+    const re = wordRe(t, 'gu');
+    re.lastIndex = 0;
+    const m = re.exec(folded);
+    if (m) {
+      const i = m.index + m[1].length;
+      if (best < 0 || i < best) { best = i; len = m[2].length; }
+    }
+  }
+  if (best < 0) return null;
+  const a = Math.max(0, best - before), b = Math.min(raw.length, best + len + after);
+  const s = (a > 0 ? '…' : '') + raw.slice(a, b).replace(/\s+/g, ' ') + (b < raw.length ? '…' : '');
+  return markTerms(s, terms);
+}
+
+/* ---------- date e durate ---------- */
+const TZ = 'Europe/Rome';
+const fmtDate = new Intl.DateTimeFormat('it-IT', { timeZone: TZ, day: 'numeric', month: 'long', year: 'numeric' });
+const fmtDateShort = new Intl.DateTimeFormat('it-IT', { timeZone: TZ, day: '2-digit', month: '2-digit', year: 'numeric' });
+const fmtTime = new Intl.DateTimeFormat('it-IT', { timeZone: TZ, hour: '2-digit', minute: '2-digit' });
+const fmtDay = new Intl.DateTimeFormat('it-IT', { timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+const fmtMonth = new Intl.DateTimeFormat('it-IT', { timeZone: TZ, month: 'long', year: 'numeric' });
+const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+const cap1 = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
+
+/* I timestamp senza fuso orario sono UTC; li mostriamo sempre in ora italiana. */
+function parseTS(s) {
+  if (!s) return null;
+  let v = String(s).trim().replace(' ', 'T');
+  if (!/([zZ]|[+-]\d{2}:?\d{2})$/.test(v)) v += 'Z';
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+function dayDate(r) { return parseTS((r.d || '1970-01-01') + 'T12:00:00Z'); }
+function recTS(r) {
+  const d = parseTS(r.dt) || dayDate(r);
+  return d ? d.getTime() : 0;
+}
+function hasTime(r) { return !!(r.dt && /T\d{2}:\d{2}/.test(r.dt)); }
+/* Le durate nel dataset sono in millisecondi; il rilevamento è automatico. */
+let DUR_MS = true;
+function durStr(v) {
+  if (!v && v !== 0) return '';
+  const sec = Math.round(DUR_MS ? v / 1000 : v);
+  if (sec < 60) return sec + ' sec';
+  const m = Math.round(sec / 60);
+  if (m < 60) return m + ' min';
+  const h = Math.floor(m / 60), rm = m % 60;
+  return h + ' h' + (rm ? ' ' + rm + ' min' : '');
+}
+function tsStr(ms) {
+  const s = Math.floor((ms || 0) / 1000);
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(sec).padStart(2, '0');
+}
+
+/* ---------- markdown minimale (le sintesi Plaud sono in markdown) ---------- */
+function mdRender(md) {
+  const lines = String(md || '').split('\n');
+  let html = '', inList = false;
+  const inline = (s) => esc(s)
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<i>$2</i>')
+    .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+    .replace(/\x01/g, '<mark class="cite">').replace(/\x02/g, '</mark>');
+  const closeList = () => { if (inList) { html += '</ul>'; inList = false; } };
+  for (let ln of lines) {
+    ln = ln.replace(/\r$/, '');
+    const h = ln.match(/^(#{1,6})\s+(.*)/);
+    const li = ln.match(/^\s*[-*+]\s+(?:\[[ xX]\]\s*)?(.*)/);
+    const ol = ln.match(/^\s*\d+[.)]\s+(.*)/);
+    const bq = ln.match(/^>\s?(.*)/);
+    if (h) { closeList(); const lvl = Math.min(4, h[1].length + 2); html += '<h' + lvl + '>' + inline(h[2]) + '</h' + lvl + '>'; }
+    else if (li) { if (!inList) { html += '<ul>'; inList = true; } html += '<li>' + inline(li[1]) + '</li>'; }
+    else if (ol) { if (!inList) { html += '<ul>'; inList = true; } html += '<li>' + inline(ol[1]) + '</li>'; }
+    else if (bq) { closeList(); html += '<blockquote>' + inline(bq[1]) + '</blockquote>'; }
+    else if (ln.trim() === '') { closeList(); }
+    else { closeList(); html += '<p>' + inline(ln) + '</p>'; }
+  }
+  closeList();
+  return html || '<p class="empty">Nessun contenuto.</p>';
+}
+
+/* ==========================================================================
+   2. FONTI: badge e contatori (requisito trasversale)
+   ========================================================================== */
+const SRC = {
+  plaud:  { fam: 'plaud',  cls: 'src-plaud',              label: 'Plaud',  sub: '',          nome: 'Plaud',              plur: 'registrazioni Plaud', sing: 'registrazione Plaud' },
+  chat:   { fam: 'claude', cls: 'src-claude',             label: 'Claude', sub: 'Chat',      nome: 'Claude · Chat',      plur: 'chat Claude',         sing: 'chat Claude' },
+  prog:   { fam: 'claude', cls: 'src-claude st-prog',     label: 'Claude', sub: 'Progetto',  nome: 'Claude · Progetto',  plur: 'progetti Claude',     sing: 'progetto Claude' },
+  design: { fam: 'claude', cls: 'src-claude st-design',   label: 'Claude', sub: 'Design',    nome: 'Claude · Design',    plur: 'sessioni Design',     sing: 'sessione Design' }
+};
+const SRC_KEYS = ['plaud', 'chat', 'prog', 'design'];
+function srcOf(r) { return SRC[r && r.src] || SRC.chat; }
+function srcBadge(r, big) {
+  const s = srcOf(r);
+  return '<span class="src ' + s.cls + (big ? ' lg' : '') + '" title="Fonte: ' + esc(s.nome) + '">' +
+    s.label + (s.sub ? '<span class="sub">' + s.sub + '</span>' : '') + '</span>';
+}
+function countBySrc(recs) {
+  const c = { plaud: 0, chat: 0, prog: 0, design: 0, tot: 0 };
+  (recs || []).forEach((r) => { if (c[r.src] !== undefined) { c[r.src]++; c.tot++; } });
+  return c;
+}
+function countsHtml(c, showZero) {
+  const parts = [];
+  const add = (cls, n, sing, plur) => { if (n || showZero) parts.push('<span class="mini ' + cls + '">' + n + ' <span class="lbl">' + (n === 1 ? sing : plur) + '</span></span>'); };
+  add('m-plaud', c.plaud, 'Plaud', 'Plaud');
+  add('m-claude', c.chat, 'chat', 'chat');
+  add('m-claude m-prog', c.prog, 'progetto', 'progetti');
+  add('m-claude m-design', c.design, 'design', 'design');
+  return '<span class="cnt-src">' + (parts.join('') || '<span class="mini" style="border-color:var(--baseline);color:var(--muted)">0</span>') + '</span>';
+}
+function countsOf(recs) { return countsHtml(countBySrc(recs)); }
+/* Selettore di fonte riutilizzabile (Tutte / Plaud / Chat / Progetti / Design). */
+const SRC_FILTERS = [
+  { v: '', l: 'Tutte le fonti', dot: '' },
+  { v: 'plaud', l: 'Plaud', dot: 'plaud' },
+  { v: 'chat', l: 'Chat', dot: 'claude' },
+  { v: 'prog', l: 'Progetti', dot: 'claude' },
+  { v: 'design', l: 'Design', dot: 'claude' }
+];
+function segHtml(cur) {
+  return SRC_FILTERS.map((f) =>
+    '<button type="button" data-v="' + f.v + '" class="' + (f.v === cur ? 'on' : '') + '">' +
+    (f.dot ? '<span class="dot ' + f.dot + '"></span>' : '') + f.l + '</button>').join('');
+}
+function bindSeg(el, onChange) {
+  el.innerHTML = segHtml('');
+  el.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-v]');
+    if (!b) return;
+    el.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+    onChange(b.dataset.v);
+  });
+}
+
+/* ==========================================================================
+   3. STATO
+   ========================================================================== */
+let MAN = null;        // manifest
+let KEY = null;        // CryptoKey AES-GCM
+let CORE = null;       // dati principali
+let RECORDS = [];      // ordinati per data decrescente
+let BYID = {};
+let THEMES = [], MACRO = [], REPORTS = [];
+let THBY = {}, MACROBY = {};
+let TH_RECS = {};      // id tema -> record[]
+let MACRO_RECS = {};   // id macro -> record[]
+let SOGG = [];         // [{nome, recs}]
+let PROGETTI = [];     // [{nome, rec, chats, docsN}]
+const CHUNKS = new Map();       // indice -> oggetto testi
+const CHUNK_PROM = new Map();
+let ALL_TX_LOADED = false;
+
+/* ==========================================================================
+   4. CIFRATURA E CARICAMENTO DATI
+   ========================================================================== */
+function b64ToBytes(b64) {
+  const bin = atob(String(b64).replace(/-/g, '+').replace(/_/g, '/'));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function bytesToB64(bytes) {
+  let s = '';
+  const b = new Uint8Array(bytes);
+  for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+  return btoa(s);
+}
+async function fetchBytes(url) {
+  let resp;
+  try { resp = await fetch(url); }
+  catch (e) { const err = new Error('Rete non raggiungibile'); err.code = 'NET'; throw err; }
+  if (!resp.ok) { const err = new Error('Risposta ' + resp.status + ' per ' + url); err.code = 'HTTP'; throw err; }
+  return new Uint8Array(await resp.arrayBuffer());
+}
+async function deriveKeyBytes(pass, kdf) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: b64ToBytes(kdf.salt), iterations: kdf.iters || 300000, hash: kdf.hash || 'SHA-256' },
+    base, 256);
+  return new Uint8Array(bits);
+}
+async function importAesKey(raw) {
+  return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['decrypt']);
+}
+/* 12 byte IV || ciphertext AES-256-GCM di gzip(JSON) */
+async function decryptJSON(buf) {
+  if (!buf || buf.length < 29) { const e = new Error('File dati troppo corto'); e.code = 'FMT'; throw e; }
+  const iv = buf.subarray(0, 12), ct = buf.subarray(12);
+  let plain;
+  try { plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, KEY, ct); }
+  catch (e) { const err = new Error('Passphrase errata'); err.code = 'GCM'; throw err; }
+  if (typeof DecompressionStream === 'undefined') { const e = new Error('Il browser non supporta DecompressionStream'); e.code = 'GZIP'; throw e; }
+  const stream = new Blob([plain]).stream().pipeThrough(new DecompressionStream('gzip'));
+  const txt = await new Response(stream).text();
+  return JSON.parse(txt);
+}
+async function loadManifest() {
+  let resp;
+  try { resp = await fetch(DATA_DIR + 'manifest.json'); }
+  catch (e) { const err = new Error('Impossibile contattare il server dei dati'); err.code = 'NET'; throw err; }
+  if (!resp.ok) { const err = new Error('manifest.json non trovato (' + resp.status + ')'); err.code = 'HTTP'; throw err; }
+  return resp.json();
+}
+function chunkName(i) {
+  if (MAN && MAN.chunks && MAN.chunks[i]) return MAN.chunks[i];
+  return 'tx-' + String(i).padStart(2, '0') + '.bin';
+}
+function nChunks() { return (MAN && (MAN.n_chunks || (MAN.chunks || []).length)) || (CORE && CORE.n_chunks) || 0; }
+function loadChunk(i) {
+  if (CHUNKS.has(i)) return Promise.resolve(CHUNKS.get(i));
+  if (CHUNK_PROM.has(i)) return CHUNK_PROM.get(i);
+  const p = (async () => {
+    const buf = await fetchBytes(DATA_DIR + chunkName(i));
+    const obj = await decryptJSON(buf);
+    CHUNKS.set(i, obj);
+    CHUNK_PROM.delete(i);
+    return obj;
+  })();
+  CHUNK_PROM.set(i, p);
+  p.catch(() => CHUNK_PROM.delete(i));
+  return p;
+}
+async function getTx(rec) {
+  if (!rec || rec.ch == null) return null;
+  const c = await loadChunk(rec.ch);
+  return (c && c[rec.id]) || null;
+}
+/* Carica tutti i chunk (usato dalla ricerca nei testi integrali). */
+async function loadAllChunks(onProgress) {
+  const n = nChunks();
+  let done = 0, failed = 0;
+  const queue = [];
+  for (let i = 0; i < n; i++) if (!CHUNKS.has(i)) queue.push(i);
+  done = n - queue.length;
+  if (onProgress) onProgress(done, n);
+  const CONC = 3;
+  async function worker() {
+    while (queue.length) {
+      const i = queue.shift();
+      try { await loadChunk(i); } catch (e) { failed++; }
+      done++;
+      if (onProgress) onProgress(done, n);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(CONC, Math.max(1, queue.length)) }, worker));
+  if (failed) throw new Error(failed + ' blocchi di testo non caricati');
+  ALL_TX_LOADED = true;
+}
+
+/* ==========================================================================
+   5. AVVIO: schermata passphrase, sblocco, blocco
+   ========================================================================== */
+const LS_KEY = 'arch_key';
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* privacy mode */ } }
+function lsDel(k) { try { localStorage.removeItem(k); } catch (e) { } }
+
+function gateMsg(text, isErr) {
+  const el = $('gateMsg');
+  el.textContent = text || '';
+  el.classList.toggle('err', !!isErr);
+}
+function gateProgress(pct) {
+  const w = $('gateBarWrap');
+  if (pct == null) { w.classList.add('hidden'); return; }
+  w.classList.remove('hidden');
+  $('gateBar').style.width = Math.max(0, Math.min(100, pct)) + '%';
+}
+function gateBusy(busy) {
+  $('gateGo').disabled = busy;
+  $('pass').disabled = busy;
+  $('gateGo').textContent = busy ? 'Apertura in corso…' : 'Entra';
+}
+
+async function unlock(keyBytes, remember) {
+  KEY = await importAesKey(keyBytes);
+  gateProgress(35);
+  gateMsg('Scarico l\'archivio…');
+  const buf = await fetchBytes(DATA_DIR + (MAN.core || 'core.bin'));
+  gateProgress(70);
+  gateMsg('Decifro e apro l\'archivio…');
+  CORE = await decryptJSON(buf);
+  gateProgress(95);
+  if (remember) lsSet(LS_KEY, bytesToB64(keyBytes));
+  buildState();
+  gateProgress(100);
+  $('gate').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  try {
+    renderAll();
+  } catch (e) {
+    document.querySelector('.wrap').innerHTML =
+      '<div class="panel"><h2>Errore nella costruzione dell\'interfaccia</h2><div class="note">' +
+      esc((e && e.message) || 'errore sconosciuto') + '</div></div>';
+  }
+}
+async function onGateSubmit(ev) {
+  if (ev) ev.preventDefault();
+  const pass = $('pass').value;
+  if (!pass) { gateMsg('Inserisci la passphrase.', true); return; }
+  gateBusy(true);
+  gateMsg('Derivo la chiave…');
+  gateProgress(8);
+  try {
+    if (!MAN) MAN = await loadManifest();
+    const keyBytes = await deriveKeyBytes(pass, MAN.kdf || {});
+    await unlock(keyBytes, $('remember').checked);
+    $('pass').value = '';
+  } catch (e) {
+    gateProgress(null);
+    gateBusy(false);
+    gateMsg(errText(e), true);
+  }
+}
+function errText(e) {
+  const code = e && e.code;
+  if (code === 'GCM') return 'Passphrase errata.';
+  if (code === 'NET') return 'Impossibile contattare il server: controlla la connessione e riprova.';
+  if (code === 'HTTP') return 'Dati non disponibili sul server (' + (e.message || '') + ').';
+  if (code === 'GZIP') return 'Questo browser non supporta la decompressione richiesta: usa una versione aggiornata di Safari, Chrome o Firefox.';
+  if (code === 'FMT') return 'File dei dati non valido.';
+  return 'Non è stato possibile aprire l\'archivio: ' + ((e && e.message) || 'errore sconosciuto') + '.';
+}
+async function tryAutoUnlock() {
+  const saved = lsGet(LS_KEY);
+  if (!saved) { $('pass').focus(); return; }
+  gateBusy(true);
+  gateMsg('Apertura automatica dell\'archivio…');
+  gateProgress(8);
+  try {
+    MAN = await loadManifest();
+    await unlock(b64ToBytes(saved), false);
+  } catch (e) {
+    gateProgress(null);
+    gateBusy(false);
+    if (e && e.code === 'GCM') {
+      lsDel(LS_KEY);
+      gateMsg('La chiave salvata non è più valida: inserisci di nuovo la passphrase.', true);
+    } else {
+      gateMsg(errText(e), true);
+    }
+    $('pass').focus();
+  }
+}
+function lockArchive() {
+  lsDel(LS_KEY);
+  KEY = null; CORE = null;
+  try { location.reload(); } catch (e) { location.href = location.pathname; }
+}
+
+/* ==========================================================================
+   6. COSTRUZIONE DELLO STATO DERIVATO
+   ========================================================================== */
+function buildState() {
+  RECORDS = (CORE.records || []).slice();
+  RECORDS.forEach((r) => {
+    r.sog = r.sog || []; r.th = r.th || []; r.kw = r.kw || [];
+    r.ent = r.ent || []; r.part = r.part || [];
+    r._ts = recTS(r);
+  });
+  RECORDS.sort((a, b) => b._ts - a._ts);
+  BYID = {};
+  RECORDS.forEach((r) => { BYID[r.id] = r; });
+
+  THEMES = CORE.themes || [];
+  MACRO = CORE.macro || [];
+  REPORTS = CORE.reports || [];
+  THBY = {}; THEMES.forEach((t) => { THBY[t.id] = t; });
+  MACROBY = {}; MACRO.forEach((m) => { MACROBY[m.id] = m; });
+
+  /* durate: se i valori superano le 24 ore sono in millisecondi */
+  const maxDur = RECORDS.reduce((a, r) => Math.max(a, r.dur || 0), 0);
+  DUR_MS = maxDur > 86400;
+
+  /* temi -> record (dalla classificazione presente su ogni record) */
+  TH_RECS = {}; THEMES.forEach((t) => { TH_RECS[t.id] = []; });
+  RECORDS.forEach((r) => r.th.forEach((tid) => { if (TH_RECS[tid]) TH_RECS[tid].push(r); }));
+  MACRO_RECS = {}; MACRO.forEach((m) => { MACRO_RECS[m.id] = []; });
+  RECORDS.forEach((r) => {
+    const ms = new Set();
+    r.th.forEach((tid) => { const t = THBY[tid]; if (t && MACRO_RECS[t.macro]) ms.add(t.macro); });
+    ms.forEach((mid) => MACRO_RECS[mid].push(r));
+  });
+
+  /* soggetti */
+  const sm = new Map();
+  RECORDS.forEach((r) => r.sog.forEach((s) => {
+    const k = String(s).trim();
+    if (!k) return;
+    if (!sm.has(k)) sm.set(k, []);
+    sm.get(k).push(r);
+  }));
+  SOGG = [...sm.entries()].map(([nome, recs]) => ({ nome, recs }));
+
+  /* progetti Claude: il record src='prog' è la scheda del progetto */
+  const pm = new Map();
+  RECORDS.filter((r) => r.src === 'prog').forEach((r) => {
+    const nome = String(r.t || '').trim() || String(r.prj || '').trim();
+    pm.set(nome.toLowerCase(), { nome, rec: r, chats: [] });
+  });
+  RECORDS.forEach((r) => {
+    if (r.src === 'prog' || !r.prj) return;
+    const k = String(r.prj).trim().toLowerCase();
+    if (!pm.has(k)) pm.set(k, { nome: String(r.prj).trim(), rec: null, chats: [] });
+    pm.get(k).chats.push(r);
+  });
+  PROGETTI = [...pm.values()];
+  PROGETTI.forEach((p) => {
+    p.all = (p.rec ? [p.rec] : []).concat(p.chats);
+    p.ts = p.all.reduce((a, r) => Math.max(a, r._ts), 0);
+  });
+}
+
+/* ==========================================================================
+   7. NAVIGAZIONE
+   ========================================================================== */
+const VIEWS = ['home', 'soggetti', 'progetti', 'temi', 'data', 'ricerca', 'mappa', 'report'];
+const VIEW_TITLES = {
+  home: 'Panoramica', soggetti: 'Soggetti', progetti: 'Progetti', temi: 'Temi',
+  data: 'Per data', ricerca: 'Ricerca', mappa: 'Mappa', report: 'Report'
+};
+let CURRENT_VIEW = 'home';
+function show(view, keepScroll) {
+  if (VIEWS.indexOf(view) < 0) view = 'home';
+  CURRENT_VIEW = view;
+  VIEWS.forEach((v) => $('view-' + v).classList.toggle('hidden', v !== view));
+  document.querySelectorAll('#nav button').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
+  $('topTitle').textContent = VIEW_TITLES[view] || 'Archivio';
+  closeSidebar();
+  if (view === 'mappa') initMap();
+  if (view === 'ricerca') setTimeout(() => { if (window.innerWidth > 900) $('q').focus(); }, 40);
+  if (!keepScroll) window.scrollTo(0, 0);
+}
+function openSidebar() { $('sidebar').classList.add('open'); $('scrim').classList.remove('hidden'); }
+function closeSidebar() { $('sidebar').classList.remove('open'); $('scrim').classList.add('hidden'); }
+
+/* ==========================================================================
+   8. RENDERING CONDIVISO
+   ========================================================================== */
+/* Riga-contenuto: la fonte è sempre il primo elemento visibile. */
+function recRow(r, extraHtml, opts) {
+  opts = opts || {};
+  const s = srcOf(r);
+  const d = dayDate(r);
+  const bits = [];
+  bits.push(fmtDate.format(d) + (hasTime(r) ? ', ' + fmtTime.format(parseTS(r.dt)) : ''));
+  if (r.src === 'plaud' && r.dur) bits.push(durStr(r.dur));
+  if (r.tipo) bits.push(cap1(r.tipo));
+  if (r.src === 'plaud' && r.fold) bits.push('cartella: ' + r.fold);
+  if (r.prj && r.src !== 'prog') bits.push('progetto: ' + r.prj);
+  if (r.src === 'prog' && r.nd) bits.push(r.nd + ' ' + plural(r.nd, 'documento', 'documenti'));
+  if ((r.src === 'chat' || r.src === 'design') && r.nm) bits.push(r.nm + ' ' + plural(r.nm, 'messaggio', 'messaggi'));
+  const sogChips = (opts.hideSog ? [] : r.sog).map((x) => '<span class="chip click" data-sog="' + esc(x) + '">' + esc(x) + '</span>').join('');
+  const thChips = (opts.hideTh ? [] : r.th).map((tid) => THBY[tid]
+    ? '<span class="chip click" data-th="' + esc(tid) + '">' + esc(THBY[tid].nome) + '</span>' : '').join('');
+  return '<article class="rec f-' + s.fam + '" data-id="' + esc(r.id) + '" tabindex="0">' +
+    '<div class="hd">' + srcBadge(r) + '<div class="t">' + esc(r.t || '(senza titolo)') + '</div></div>' +
+    '<div class="m">' + bits.map((b) => '<span>' + esc(b) + '</span>').join('') + '</div>' +
+    (sogChips || thChips ? '<div class="th">' + sogChips + thChips + '</div>' : '') +
+    (extraHtml ? '<div class="snip">' + extraHtml + '</div>' : '') +
+    '</article>';
+}
+/* Rendering incrementale: blocchi da N, con caricamento automatico allo scroll. */
+function incremental(host, items, renderFn, batch, emptyMsg) {
+  batch = batch || 25;
+  host.innerHTML = '';
+  if (!items.length) {
+    host.innerHTML = '<div class="empty">' + (emptyMsg || 'Nessun contenuto.') + '</div>';
+    return { ensure: function () { }, total: 0 };
+  }
+  const box = document.createElement('div');
+  host.appendChild(box);
+  let i = 0, obs = null;
+  const btn = document.createElement('button');
+  btn.className = 'more-btn';
+  btn.type = 'button';
+  function step() {
+    const to = Math.min(items.length, i + batch);
+    let html = '';
+    for (; i < to; i++) html += renderFn(items[i], i);
+    box.insertAdjacentHTML('beforeend', html);
+    if (i >= items.length) {
+      if (obs) obs.disconnect();
+      if (btn.parentNode) btn.remove();
+    } else {
+      btn.textContent = 'Mostra altri ' + Math.min(batch, items.length - i) + ' · ne restano ' + (items.length - i);
+    }
+  }
+  host.appendChild(btn);
+  btn.addEventListener('click', step);
+  if ('IntersectionObserver' in window) {
+    obs = new IntersectionObserver((entries) => {
+      if (entries.some((en) => en.isIntersecting) && i < items.length) step();
+    }, { rootMargin: '400px' });
+    obs.observe(btn);
+  }
+  step();
+  /* handle: permette di forzare il rendering fino a un certo indice */
+  return {
+    total: items.length,
+    ensure: function (n) { let guard = 0; while (i < Math.min(n, items.length) && guard++ < 500) step(); }
+  };
+}
+/* Elenco di record raggruppati per giorno (usato in "Per data" e nei dettagli). */
+function groupByDay(recs) {
+  const groups = [];
+  let cur = null;
+  recs.forEach((r) => {
+    if (!cur || cur.d !== r.d) { cur = { d: r.d, recs: [] }; groups.push(cur); }
+    cur.recs.push(r);
+  });
+  return groups;
+}
+function dayGroupHtml(g) {
+  const c = countBySrc(g.recs);
+  return '<h4 class="day-h"><span>' + esc(cap1(fmtDay.format(dayDate(g.recs[0])))) + '</span>' +
+    countsHtml(c) + '</h4>' + g.recs.map((r) => recRow(r)).join('');
+}
+/* Intestazione con conteggi per fonte */
+function headerCounts(recs) { return countsHtml(countBySrc(recs)); }
+
+/* ==========================================================================
+   9. VISTA 1 — PANORAMICA
+   ========================================================================== */
+function periodoLabel() {
+  if (!RECORDS.length) return '';
+  const last = dayDate(RECORDS[0]), first = dayDate(RECORDS[RECORDS.length - 1]);
+  const f = (d) => MESI[d.getUTCMonth()].slice(0, 3) + ' ' + d.getUTCFullYear();
+  return f(first) + ' – ' + f(last);
+}
+function renderHome() {
+  const c = countBySrc(RECORDS);
+  const oreTot = Math.round(RECORDS.reduce((a, r) => a + (r.src === 'plaud' ? (DUR_MS ? (r.dur || 0) / 3600000 : (r.dur || 0) / 3600) : 0), 0));
+  const nMsg = RECORDS.reduce((a, r) => a + ((r.src === 'chat' || r.src === 'design') ? (r.nm || 0) : 0), 0);
+  const nDoc = RECORDS.reduce((a, r) => a + (r.src === 'prog' ? (r.nd || 0) : 0), 0);
+
+  $('homeIntro').innerHTML = 'L\'archivio unifica le registrazioni Plaud e le conversazioni Claude di Andrea Martignano: ' +
+    '<b>' + c.tot + ' contenuti</b> dal ' + fmtDate.format(dayDate(RECORDS[RECORDS.length - 1])) +
+    ' al ' + fmtDate.format(dayDate(RECORDS[0])) + '. La fonte di ogni contenuto è sempre indicata dal badge colorato.';
+
+  $('homeTiles').innerHTML = [
+    { v: c.tot, l: 'contenuti in archivio', x: countsHtml(c) },
+    { v: c.plaud, l: 'registrazioni Plaud', x: '<span class="mini m-plaud">' + oreTot + ' <span class="lbl">ore di audio</span></span>' },
+    { v: c.chat + c.prog + c.design, l: 'contenuti Claude', x: countsHtml({ plaud: 0, chat: c.chat, prog: c.prog, design: c.design }) },
+    { v: nMsg.toLocaleString('it-IT'), l: 'messaggi nelle conversazioni', x: '<span class="mini m-claude m-prog">' + nDoc + ' <span class="lbl">documenti nei progetti</span></span>' },
+    { v: MACRO.length + ' · ' + THEMES.length, l: 'macro-filoni e temi' },
+    { v: periodoLabel(), l: 'periodo coperto', sm: true }
+  ].map((t) => '<div class="tile"><div class="v' + (t.sm ? ' sm' : '') + '">' + esc(String(t.v)) + '</div>' +
+    '<div class="l">' + esc(t.l) + '</div>' + (t.x ? '<div class="x">' + t.x + '</div>' : '') + '</div>').join('');
+
+  drawChart();
+  $('homeLast').innerHTML = RECORDS.slice(0, 10).map((r) => recRow(r, null, { hideTh: true })).join('');
+
+  const top = SOGG.slice().sort((a, b) => b.recs.length - a.recs.length || a.nome.localeCompare(b.nome, 'it')).slice(0, 12);
+  $('homeSog').innerHTML = top.map((s) =>
+    '<button class="card" data-sogcard="' + esc(s.nome) + '"><div class="n">' + esc(s.nome) + '</div>' +
+    '<div class="c">' + s.recs.length + ' ' + plural(s.recs.length, 'contenuto', 'contenuti') + '</div>' +
+    '<div class="x">' + countsOf(s.recs) + '</div></button>').join('');
+
+  $('homeMacroNote').textContent = 'L\'archivio letto per filoni narrativi: ' + MACRO.length + ' macro-filoni e ' +
+    THEMES.length + ' temi. Un contenuto può appartenere a più temi.';
+  $('homeMacro').innerHTML = MACRO.map((m) => {
+    const recs = MACRO_RECS[m.id] || [];
+    const nt = THEMES.filter((t) => t.macro === m.id).length;
+    return '<button class="card" data-macro="' + esc(m.id) + '">' +
+      '<div class="n">' + esc(m.nome) + '</div>' +
+      '<div class="c">' + nt + ' ' + plural(nt, 'tema', 'temi') + ' · ' + recs.length + ' ' + plural(recs.length, 'contenuto', 'contenuti') + '</div>' +
+      '<div class="x">' + countsOf(recs) + '</div>' +
+      '<div class="d">' + esc(trunc(m.descrizione, 190)) + '</div></button>';
+  }).join('');
+}
+/* Istogramma mensile con le due fonti sovrapposte */
+let CHART_DATA = null;
+function drawChart() {
+  const svg = $('chart');
+  if (!RECORDS.length) return;
+  if (!CHART_DATA) {
+    const cnt = new Map();
+    RECORDS.forEach((r) => {
+      const k = String(r.d || '').slice(0, 7);
+      if (!k) return;
+      if (!cnt.has(k)) cnt.set(k, { p: 0, c: 0 });
+      const o = cnt.get(k);
+      if (r.src === 'plaud') o.p++; else o.c++;
+    });
+    const keys = [...cnt.keys()].sort();
+    const all = [];
+    if (keys.length) {
+      let [y, m] = keys[0].split('-').map(Number);
+      const [ly, lm] = keys[keys.length - 1].split('-').map(Number);
+      while (y < ly || (y === ly && m <= lm)) {
+        all.push(y + '-' + String(m).padStart(2, '0'));
+        m++; if (m > 12) { m = 1; y++; }
+      }
+    }
+    CHART_DATA = all.map((k) => ({ k, p: (cnt.get(k) || {}).p || 0, c: (cnt.get(k) || {}).c || 0 }));
+  }
+  const rows = CHART_DATA;
+  const W = svg.clientWidth || 900, H = 200, padL = 30, padB = 26, padT = 12;
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  const max = Math.max(1, ...rows.map((r) => r.p + r.c));
+  const innerW = W - padL - 8, innerH = H - padT - padB;
+  const bw = Math.max(3, Math.min(24, innerW / rows.length - 4));
+  let g = '';
+  const steps = max <= 6 ? max : 4;
+  for (let i = 1; i <= steps; i++) {
+    const v = Math.round(max * i / steps);
+    const y = padT + innerH - innerH * v / max;
+    g += '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - 8) + '" y2="' + y + '" stroke="var(--grid)" stroke-width="1"/>';
+    g += '<text x="' + (padL - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' + v + '</text>';
+  }
+  g += '<line x1="' + padL + '" y1="' + (padT + innerH) + '" x2="' + (W - 8) + '" y2="' + (padT + innerH) + '" stroke="var(--baseline)" stroke-width="1"/>';
+  rows.forEach((r, i) => {
+    const x = padL + innerW * (i + 0.5) / rows.length - bw / 2;
+    const hp = innerH * r.p / max, hc = innerH * r.c / max;
+    const y0 = padT + innerH;
+    if (r.p) g += '<rect x="' + x.toFixed(1) + '" y="' + (y0 - hp).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(hp, 1).toFixed(1) + '" fill="var(--plaud)" rx="1.5"/>';
+    if (r.c) g += '<rect x="' + x.toFixed(1) + '" y="' + (y0 - hp - hc).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(hc, 1).toFixed(1) + '" fill="var(--claude)" rx="1.5"/>';
+    g += '<rect class="hit" x="' + (x - 2).toFixed(1) + '" y="' + padT + '" width="' + (bw + 4).toFixed(1) + '" height="' + innerH + '" fill="transparent" data-i="' + i + '"/>';
+    const mm = r.k.slice(5);
+    if (mm === '01' || i === 0)
+      g += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)">' + r.k.slice(0, 4) + '</text>';
+    else if (parseInt(mm, 10) % 3 === 1)
+      g += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)">' + MESI[parseInt(mm, 10) - 1].slice(0, 3) + '</text>';
+  });
+  svg.innerHTML = g;
+}
+(function bindChartTip() {
+  const tip = $('chartTip');
+  const svg = $('chart');
+  svg.addEventListener('mousemove', (e) => {
+    const h = e.target.closest('.hit');
+    if (!h || !CHART_DATA) { tip.style.display = 'none'; return; }
+    const r = CHART_DATA[parseInt(h.dataset.i, 10)];
+    const [y, m] = r.k.split('-');
+    const dot = (c) => '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--' + c + ');margin-right:4px"></span>';
+    tip.innerHTML = '<b>' + cap1(MESI[parseInt(m, 10) - 1]) + ' ' + y + '</b> — ' + (r.p + r.c) + ' contenuti<br>' +
+      dot('plaud') + r.p + ' Plaud · ' + dot('claude') + r.c + ' Claude';
+    tip.style.display = 'block';
+    const wr = $('chartWrap').getBoundingClientRect();
+    tip.style.left = Math.max(0, Math.min(e.clientX - wr.left + 12, wr.width - 200)) + 'px';
+    tip.style.top = (e.clientY - wr.top - 44) + 'px';
+  });
+  svg.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+})();
+
+/* ==========================================================================
+   10. VISTA 2 — SOGGETTI
+   ========================================================================== */
+function renderSoggetti() {
+  const mode = $('sogSort').value;
+  const list = SOGG.slice();
+  if (mode === 'alf') list.sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
+  else if (mode === 'rec') list.sort((a, b) => (b.recs[0] ? b.recs[0]._ts : 0) - (a.recs[0] ? a.recs[0]._ts : 0));
+  else list.sort((a, b) => b.recs.length - a.recs.length || a.nome.localeCompare(b.nome, 'it'));
+  const senza = RECORDS.filter((r) => !r.sog.length);
+  $('sogCount').textContent = list.length + ' soggetti' + (senza.length ? ' · ' + senza.length + ' contenuti senza soggetto' : '');
+  let html = list.map((s) =>
+    '<button class="card" data-sogcard="' + esc(s.nome) + '">' +
+    '<div class="n">' + esc(s.nome) + '</div>' +
+    '<div class="c">' + s.recs.length + ' ' + plural(s.recs.length, 'contenuto', 'contenuti') +
+    (s.recs[0] ? ' · ultimo: ' + fmtDateShort.format(dayDate(s.recs[0])) : '') + '</div>' +
+    '<div class="x">' + countsOf(s.recs) + '</div></button>').join('');
+  if (senza.length) {
+    html += '<button class="card" data-sogcard="__senza__"><div class="n" style="color:var(--muted)">Senza soggetto assegnato</div>' +
+      '<div class="c">' + senza.length + ' contenuti non ricondotti a un soggetto</div>' +
+      '<div class="x">' + countsOf(senza) + '</div></button>';
+  }
+  $('sogGrid').innerHTML = html;
+}
+let sogFiltro = '';
+function openSoggetto(nome) {
+  show('soggetti');
+  $('sogIndex').classList.add('hidden');
+  const el = $('sogDetail');
+  el.classList.remove('hidden');
+  const senza = nome === '__senza__';
+  const recs = senza ? RECORDS.filter((r) => !r.sog.length) : RECORDS.filter((r) => r.sog.indexOf(nome) >= 0);
+  const titolo = senza ? 'Senza soggetto assegnato' : nome;
+  /* temi ricorrenti del soggetto */
+  const thCount = new Map();
+  recs.forEach((r) => r.th.forEach((t) => thCount.set(t, (thCount.get(t) || 0) + 1)));
+  const topTh = [...thCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8)
+    .map(([tid, n]) => THBY[tid] ? '<span class="chip click" data-th="' + esc(tid) + '">' + esc(THBY[tid].nome) + ' · ' + n + '</span>' : '').join('');
+  const prj = [...new Set(recs.map((r) => (r.prj || '').trim()).filter(Boolean))]
+    .map((p) => '<span class="chip click" data-prj="' + esc(p) + '">' + esc(p) + '</span>').join('');
+  el.innerHTML = '<button class="backlink" data-back="sog">&#8592; Tutti i soggetti</button>' +
+    '<div class="panel"><h2>' + esc(titolo) + '</h2>' +
+    '<div class="note">' + recs.length + ' ' + plural(recs.length, 'contenuto', 'contenuti') +
+    (recs.length ? ' — dal ' + fmtDate.format(dayDate(recs[recs.length - 1])) + ' al ' + fmtDate.format(dayDate(recs[0])) : '') + '</div>' +
+    '<div style="margin-bottom:10px">' + countsOf(recs) + '</div>' +
+    (topTh ? '<div class="note" style="margin-bottom:4px">Temi ricorrenti</div><div style="margin-bottom:8px">' + topTh + '</div>' : '') +
+    (prj ? '<div class="note" style="margin-bottom:4px">Progetti collegati</div><div style="margin-bottom:8px">' + prj + '</div>' : '') +
+    '<div class="tools" style="margin-bottom:0"><div class="seg" id="sogSeg"></div></div></div>' +
+    '<div id="sogRecs"></div>';
+  sogFiltro = '';
+  bindSeg($('sogSeg'), (v) => { sogFiltro = v; paint(); });
+  function paint() {
+    const rs = sogFiltro ? recs.filter((r) => r.src === sogFiltro) : recs;
+    incremental($('sogRecs'), rs, (r) => recRow(r, null, { hideSog: !senza }), 25,
+      'Nessun contenuto per questa fonte.');
+  }
+  paint();
+  window.scrollTo(0, 0);
+}
+function backToSoggetti() {
+  $('sogDetail').classList.add('hidden');
+  $('sogIndex').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+/* ==========================================================================
+   11. VISTA 3 — PROGETTI
+   ========================================================================== */
+function renderProgetti() {
+  const mode = $('prjSort').value;
+  const list = PROGETTI.slice();
+  if (mode === 'alf') list.sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
+  else if (mode === 'rec') list.sort((a, b) => b.ts - a.ts);
+  else list.sort((a, b) => b.all.length - a.all.length || a.nome.localeCompare(b.nome, 'it'));
+  $('prjCount').textContent = list.length + ' progetti Claude';
+  $('prjGrid').innerHTML = list.map((p) => {
+    const nd = p.rec ? (p.rec.nd || 0) : 0;
+    const sog = [...new Set(p.all.reduce((a, r) => a.concat(r.sog), []))].slice(0, 3);
+    const descr = p.rec && p.rec.sin ? trunc(p.rec.sin.replace(/\s+/g, ' '), 150) : '';
+    return '<button class="card" data-prj="' + esc(p.nome) + '">' +
+      '<div class="hd" style="margin-bottom:5px">' + (p.rec ? srcBadge(p.rec) : '<span class="src src-claude st-prog">Claude<span class="sub">Progetto</span></span>') + '</div>' +
+      '<div class="n">' + esc(p.nome) + '</div>' +
+      '<div class="c">' + nd + ' ' + plural(nd, 'documento', 'documenti') + ' · ' + p.chats.length + ' ' + plural(p.chats.length, 'conversazione', 'conversazioni') +
+      (p.ts ? ' · ' + fmtDateShort.format(new Date(p.ts)) : '') + '</div>' +
+      (sog.length ? '<div class="x">' + sog.map((s) => '<span class="chip">' + esc(s) + '</span>').join('') + '</div>' : '') +
+      (descr ? '<div class="d">' + esc(descr) + '</div>' : '') +
+      '</button>';
+  }).join('') || '<div class="empty">Nessun progetto.</div>';
+}
+let PRJ_SEQ = 0;
+function openProgetto(nome) {
+  const key = String(nome || '').trim().toLowerCase();
+  const p = PROGETTI.find((x) => x.nome.trim().toLowerCase() === key);
+  if (!p) return;
+  show('progetti');
+  $('prjIndex').classList.add('hidden');
+  const el = $('prjDetail');
+  el.classList.remove('hidden');
+  const sogSet = new Set(p.all.reduce((a, r) => a.concat(r.sog), []));
+  const chats = p.chats.slice().sort((a, b) => b._ts - a._ts);
+  const ids = new Set(p.all.map((r) => r.id));
+  const correlati = RECORDS.filter((r) => !ids.has(r.id) && r.sog.some((s) => sogSet.has(s)));
+  el.innerHTML = '<button class="backlink" data-back="prj">&#8592; Tutti i progetti</button>' +
+    '<div class="panel">' +
+    '<div style="margin-bottom:6px">' + (p.rec ? srcBadge(p.rec, true) : '<span class="src src-claude st-prog lg">Claude<span class="sub">Progetto</span></span>') + '</div>' +
+    '<h2>' + esc(p.nome) + '</h2>' +
+    '<div class="note">' + (p.rec && p.rec.nd ? p.rec.nd + ' ' + plural(p.rec.nd, 'documento', 'documenti') : 'nessun documento caricato') +
+    ' · ' + chats.length + ' ' + plural(chats.length, 'conversazione collegata', 'conversazioni collegate') +
+    (p.rec ? ' · creato il ' + fmtDate.format(dayDate(p.rec)) : '') + '</div>' +
+    '<div style="margin-bottom:10px">' + countsOf(p.all) + '</div>' +
+    (sogSet.size ? '<div>' + [...sogSet].map((s) => '<span class="chip click" data-sog="' + esc(s) + '">' + esc(s) + '</span>').join('') + '</div>' : '') +
+    (p.rec && p.rec.sin ? '<div class="dsec"><h3>Descrizione</h3><div class="sum">' + mdRender(p.rec.sin) + '</div></div>' : '') +
+    (p.rec ? '<div class="tools" style="margin:14px 0 0 0"><button class="btn" data-open="' + esc(p.rec.id) + '">Apri la scheda del progetto</button></div>' : '') +
+    '</div>' +
+    '<div class="panel"><h2>Documenti del progetto</h2>' +
+    '<div class="note">I file caricati dentro il progetto Claude.</div><div id="prjDocs"></div></div>' +
+    '<div class="panel flat"><h2 style="font-size:16px;margin-bottom:6px">Conversazioni nel progetto ' + countsHtml(countBySrc(chats)) + '</h2>' +
+    '<div id="prjChats"></div></div>' +
+    (correlati.length ? '<div class="panel flat" style="margin-top:22px"><h2 style="font-size:16px;margin-bottom:2px">Contenuti correlati per soggetto ' + countsHtml(countBySrc(correlati)) + '</h2>' +
+      '<div class="note" style="margin-bottom:10px">Registrazioni Plaud e conversazioni che riguardano gli stessi soggetti del progetto (' + [...sogSet].map(esc).join(', ') + ').</div>' +
+      '<div id="prjRel"></div></div>' : '');
+  incremental($('prjChats'), chats, (r) => recRow(r), 20, 'Nessuna conversazione collegata a questo progetto.');
+  if (correlati.length) incremental($('prjRel'), correlati, (r) => recRow(r), 15);
+  /* documenti: caricati dal chunk cifrato solo ora */
+  const docsEl = $('prjDocs');
+  if (!p.rec) { docsEl.innerHTML = '<div class="empty">Progetto senza scheda: i documenti non sono disponibili.</div>'; }
+  else if (!p.rec.nd) { docsEl.innerHTML = '<div class="empty">Nessun documento caricato in questo progetto.</div>'; }
+  else {
+    docsEl.innerHTML = '<div class="load-line">Carico i documenti…</div>';
+    const seq = ++PRJ_SEQ;
+    getTx(p.rec).then((tx) => {
+      if (seq !== PRJ_SEQ) return;             // nel frattempo è stato aperto un altro progetto
+      const docs = (tx && Array.isArray(tx.tx)) ? tx.tx : [];
+      docsEl.innerHTML = docs.length ? docs.map((d, i) => docHtml(d, 'p' + i)).join('')
+        : '<div class="empty">Nessun documento caricato in questo progetto.</div>';
+    }).catch((e) => {
+      if (seq === PRJ_SEQ) docsEl.innerHTML = '<div class="empty">Documenti non disponibili: ' + esc(errText(e)) + '</div>';
+    });
+  }
+  window.scrollTo(0, 0);
+}
+function backToProgetti() {
+  $('prjDetail').classList.add('hidden');
+  $('prjIndex').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+/* Documento espandibile (progetti e allegati) */
+function docHtml(d, key) {
+  const body = String(d && d.x || '');
+  const kb = body ? Math.max(1, Math.round(body.length / 1024)) + ' kB di testo' : 'contenuto non estratto';
+  return '<div class="doc" data-doc="' + esc(key) + '">' +
+    '<div class="dh" data-doctoggle="1"><span class="nm">' + esc(d && d.n || 'documento') + '</span>' +
+    '<span class="sz">' + kb + '</span><span class="tg">apri</span></div>' +
+    '<div class="dc hidden">' + (body ? esc(body) : 'Il contenuto di questo file non è disponibile in archivio.') + '</div></div>';
+}
+
+/* ==========================================================================
+   12. VISTA 4 — TEMI (macro-filoni -> temi -> contenuti)
+   ========================================================================== */
+function renderTemi() {
+  $('temiIntro').textContent = 'La tassonomia dell\'archivio su due livelli: ' + MACRO.length +
+    ' macro-filoni narrativi che raccolgono ' + THEMES.length + ' temi. Ogni contenuto, Plaud o Claude, può appartenere a più temi.';
+  $('macroGrid').innerHTML = MACRO.map((m) => {
+    const recs = MACRO_RECS[m.id] || [];
+    const nt = THEMES.filter((t) => t.macro === m.id).length;
+    return '<button class="card" data-macro="' + esc(m.id) + '">' +
+      '<div class="n">' + esc(m.nome) + '</div>' +
+      '<div class="c">' + nt + ' ' + plural(nt, 'tema', 'temi') + ' · ' + recs.length + ' ' + plural(recs.length, 'contenuto', 'contenuti') + '</div>' +
+      '<div class="x">' + countsOf(recs) + '</div>' +
+      '<div class="d">' + esc(trunc(m.descrizione, 220)) + '</div></button>';
+  }).join('');
+}
+function openMacro(mid) {
+  const m = MACROBY[mid];
+  if (!m) return;
+  show('temi');
+  $('temiIndex').classList.add('hidden');
+  $('temaDetail').classList.add('hidden');
+  const el = $('macroDetail');
+  el.classList.remove('hidden');
+  const recs = MACRO_RECS[mid] || [];
+  const temi = THEMES.filter((t) => t.macro === mid)
+    .sort((a, b) => (TH_RECS[b.id] || []).length - (TH_RECS[a.id] || []).length);
+  el.innerHTML = '<button class="backlink" data-back="temi">&#8592; Tutti i macro-filoni</button>' +
+    '<div class="panel"><h2>' + esc(m.nome) + '</h2>' +
+    '<div class="note">' + temi.length + ' ' + plural(temi.length, 'tema', 'temi') + ' · ' + recs.length + ' ' + plural(recs.length, 'contenuto', 'contenuti') + '</div>' +
+    '<div style="margin-bottom:10px">' + countsOf(recs) + '</div>' +
+    '<div style="font-size:14.5px">' + esc(m.descrizione || '') + '</div>' +
+    (m.narrativa ? '<div style="font-size:14px;color:var(--ink-2);margin-top:10px">' + esc(m.narrativa) + '</div>' : '') +
+    '</div><div class="grid wide">' + temi.map((t) => {
+      const rs = TH_RECS[t.id] || [];
+      return '<button class="card" data-tema="' + esc(t.id) + '">' +
+        '<div class="n">' + esc(t.nome) + '</div>' +
+        '<div class="c">' + rs.length + ' ' + plural(rs.length, 'contenuto', 'contenuti') + (t.periodo ? ' · ' + esc(t.periodo) : '') + '</div>' +
+        '<div class="x">' + countsOf(rs) + '</div>' +
+        '<div class="d">' + esc(trunc(t.descrizione, 180)) + '</div></button>';
+    }).join('') + '</div>';
+  window.scrollTo(0, 0);
+}
+let temaFiltro = '';
+function openTema(tid) {
+  const t = THBY[tid];
+  if (!t) return;
+  const m = MACROBY[t.macro];
+  show('temi');
+  $('temiIndex').classList.add('hidden');
+  $('macroDetail').classList.add('hidden');
+  const el = $('temaDetail');
+  el.classList.remove('hidden');
+  const recs = (TH_RECS[tid] || []).slice().sort((a, b) => b._ts - a._ts);
+  const conns = (t.connessioni || []).map((c) => {
+    const ct = THBY[c.tema];
+    return ct ? '<div style="font-size:13.5px;color:var(--ink-2);margin-bottom:6px">' +
+      '<b class="chip click" data-th="' + esc(c.tema) + '" style="background:var(--chip-bg);color:var(--ink-1)">' + esc(ct.nome) + '</b> ' + esc(c.perche || '') + '</div>' : '';
+  }).join('');
+  el.innerHTML = '<button class="backlink" data-back="macro" data-mid="' + esc(t.macro || '') + '">&#8592; ' + esc(m ? m.nome : 'Tutti i macro-filoni') + '</button>' +
+    '<div class="panel">' +
+    (m ? '<div class="note" style="margin-bottom:2px">' + esc(m.nome) + '</div>' : '') +
+    '<h2>' + esc(t.nome) + '</h2>' +
+    '<div class="note">' + recs.length + ' ' + plural(recs.length, 'contenuto', 'contenuti') + (t.periodo ? ' · ' + esc(t.periodo) : '') + '</div>' +
+    '<div style="margin-bottom:10px">' + countsOf(recs) + '</div>' +
+    '<div style="font-size:14.5px">' + esc(t.descrizione || '') + '</div>' +
+    (t.narrativa && t.narrativa !== t.descrizione ? '<div style="font-size:14px;color:var(--ink-2);margin-top:10px">' + esc(t.narrativa) + '</div>' : '') +
+    (conns ? '<div class="dsec"><h3>Connessioni con altri temi</h3>' + conns + '</div>' : '') +
+    '<div class="tools" style="margin:14px 0 0 0"><div class="seg" id="temaSeg"></div></div>' +
+    '</div><div id="temaRecs"></div>';
+  temaFiltro = '';
+  bindSeg($('temaSeg'), (v) => { temaFiltro = v; paint(); });
+  function paint() {
+    const rs = temaFiltro ? recs.filter((r) => r.src === temaFiltro) : recs;
+    incremental($('temaRecs'), rs, (r) => recRow(r, null, { hideTh: false }), 25, 'Nessun contenuto per questa fonte.');
+  }
+  paint();
+  window.scrollTo(0, 0);
+}
+function backToTemi() {
+  $('macroDetail').classList.add('hidden');
+  $('temaDetail').classList.add('hidden');
+  $('temiIndex').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+/* ==========================================================================
+   13. VISTA 5 — PER DATA
+   ========================================================================== */
+let dataFiltro = { src: '', period: 'all', year: '' };
+function renderData() {
+  const now = Date.now();
+  let rs = RECORDS;
+  if (dataFiltro.src) rs = rs.filter((r) => r.src === dataFiltro.src);
+  if (dataFiltro.year) rs = rs.filter((r) => String(r.d || '').slice(0, 4) === dataFiltro.year);
+  if (dataFiltro.period !== 'all') {
+    const days = parseInt(dataFiltro.period, 10);
+    const limit = now - days * 86400000;
+    rs = rs.filter((r) => r._ts >= limit);
+  }
+  const c = countBySrc(rs);
+  $('dataCount').innerHTML = rs.length + ' ' + plural(rs.length, 'contenuto', 'contenuti') + ' ';
+  $('dataCount').innerHTML += countsHtml(c);
+  const groups = groupByDay(rs);
+  let lastMonth = '';
+  incremental($('dataList'), groups, (g) => {
+    let html = '';
+    const mk = cap1(fmtMonth.format(dayDate(g.recs[0])));
+    if (mk !== lastMonth) {
+      lastMonth = mk;
+      const inMonth = rs.filter((r) => String(r.d || '').slice(0, 7) === String(g.d).slice(0, 7));
+      html += '<div class="rec-group"><h3>' + esc(mk) + ' <span class="cnt">— ' + inMonth.length + ' ' + plural(inMonth.length, 'contenuto', 'contenuti') + '</span></h3></div>';
+    }
+    return html + dayGroupHtml(g);
+  }, 12, 'Nessun contenuto con questi filtri.');
+}
+function initDataFilters() {
+  bindSeg($('dataSrc'), (v) => { dataFiltro.src = v; renderData(); });
+  const years = [...new Set(RECORDS.map((r) => String(r.d || '').slice(0, 4)).filter(Boolean))].sort().reverse();
+  $('dataYear').innerHTML = '<option value="">tutti</option>' + years.map((y) => '<option value="' + y + '">' + y + '</option>').join('');
+  $('dataPeriod').addEventListener('change', () => { dataFiltro.period = $('dataPeriod').value; renderData(); });
+  $('dataYear').addEventListener('change', () => { dataFiltro.year = $('dataYear').value; renderData(); });
+}
+
+/* ==========================================================================
+   14. TESTI INTEGRALI: normalizzazione dei tre formati
+   ========================================================================== */
+/* I messaggi delle sessioni Design sono serializzati come struttura tecnica:
+   ne estraiamo il testo leggibile. */
+function unescPy(s) {
+  return String(s)
+    .replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\r/g, '')
+    .replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+}
+function looksSerialized(x) { return /^\s*\{\s*['"]/.test(x); }
+function extractSerialized(x) {
+  const out = [];
+  const re = /['"](?:content|text)['"]\s*:\s*'((?:\\.|[^'\\])*)'/g;
+  let m;
+  while ((m = re.exec(x)) !== null) {
+    const v = unescPy(m[1]).trim();
+    if (v && !/^This project uses Design Components/.test(v)) out.push(v);
+    if (out.length > 8) break;
+  }
+  if (!out.length) {
+    const re2 = /"(?:content|text)"\s*:\s*"((?:\\.|[^"\\])*)"/g;
+    while ((m = re2.exec(x)) !== null) {
+      const v = unescPy(m[1]).trim();
+      if (v) out.push(v);
+      if (out.length > 8) break;
+    }
+  }
+  const uniq = [...new Set(out)];
+  let txt = uniq.join('\n\n');
+  if (txt.length > 6000) txt = txt.slice(0, 6000) + '\n…';
+  return txt;
+}
+function msgText(m) {
+  const x = String((m && m.x) || '');
+  if (!x) return '';
+  return looksSerialized(x) ? extractSerialized(x) : x;
+}
+/* Testo piatto di un record, per la ricerca nei testi integrali */
+function txPlain(tx) {
+  if (!tx) return '';
+  const t = tx.tx;
+  if (typeof t === 'string') return t;
+  if (!Array.isArray(t)) return '';
+  const parts = [];
+  for (const u of t) {
+    if (Array.isArray(u)) parts.push((u[1] ? u[1] + ': ' : '') + (u[2] || ''));
+    else if (u && typeof u === 'object') {
+      if (u.n) parts.push(String(u.n));
+      const body = ('s' in u) ? msgText(u) : String(u.x || '');
+      if (body) parts.push(body);
+    }
+  }
+  return parts.join('\n');
+}
+
+/* ==========================================================================
+   15. VISTA 6 — RICERCA (solo parole intere)
+   ========================================================================== */
+let SIDX = null;
+let qFiltro = '';
+function buildIdx() {
+  if (SIDX) return;
+  SIDX = RECORDS.map((r) => {
+    /* la ricerca istantanea lavora su titolo, sintesi, parole chiave ed entità */
+    const kw = r.kw.join(' · ');
+    const ent = r.ent.join(' · ');
+    return {
+      r: r,
+      t: r.t || '', tf: fold(r.t || ''),
+      s: r.sin || '', sf: fold(r.sin || ''),
+      kw: kw, kwf: fold(kw),
+      ent: ent, entf: fold(ent),
+      ft: null, ftf: null
+    };
+  });
+}
+function indexFullTextSync(e) {
+  if (e.ftf !== null) return;
+  const c = CHUNKS.get(e.r.ch);
+  const tx = c ? c[e.r.id] : null;
+  e.ft = txPlain(tx);
+  e.ftf = fold(e.ft);
+}
+async function indexAllFullText(onProgress) {
+  buildIdx();
+  for (let i = 0; i < SIDX.length; i++) {
+    indexFullTextSync(SIDX[i]);
+    if (i % 20 === 0) {
+      if (onProgress) onProgress(i, SIDX.length);
+      await new Promise((res) => setTimeout(res, 0));
+    }
+  }
+  if (onProgress) onProgress(SIDX.length, SIDX.length);
+}
+function queryTerms(q) {
+  return fold(q).split(/[^\p{L}\p{N}]+/u).filter((t) => t.length >= 2);
+}
+function runSearch() {
+  const raw = $('q').value.trim();
+  const terms = queryTerms(raw);
+  const out = $('qResults'), cnt = $('qCount');
+  if (!terms.length) {
+    out.innerHTML = '';
+    cnt.textContent = raw ? 'Scrivi almeno due lettere.' : 'Digita una parola per cercare in titoli, sintesi, parole chiave ed entità.';
+    return;
+  }
+  buildIdx();
+  const useFt = ALL_TX_LOADED && $('qFullOn').checked;
+  const res = [];
+  for (const e of SIDX) {
+    if (qFiltro && e.r.src !== qFiltro) continue;
+    if (useFt) indexFullTextSync(e);
+    let score = 0, ok = true;
+    const where = new Set();
+    for (const t of terms) {
+      let hit = false;
+      if (hasWord(e.tf, t)) { score += 8; where.add('titolo'); hit = true; }
+      if (hasWord(e.kwf, t)) { score += 5; where.add('parole chiave'); hit = true; }
+      if (hasWord(e.entf, t)) { score += 5; where.add('entità'); hit = true; }
+      if (hasWord(e.sf, t)) { score += 3; where.add('sintesi'); hit = true; }
+      if (useFt && e.ftf && hasWord(e.ftf, t)) { score += 1; where.add('testo integrale'); hit = true; }
+      if (!hit) { ok = false; break; }
+    }
+    if (ok) res.push({ e: e, score: score, where: [...where] });
+  }
+  res.sort((a, b) => b.score - a.score || b.e.r._ts - a.e.r._ts);
+  const c = countBySrc(res.map((x) => x.e.r));
+  cnt.innerHTML = res.length
+    ? res.length + ' ' + plural(res.length, 'contenuto trovato', 'contenuti trovati') + ' per <b>' + esc(raw) + '</b> ' + countsHtml(c) +
+      ' <span style="color:var(--muted)">— solo parole intere' + (useFt ? ', testi integrali inclusi' : '') + '</span>'
+    : 'Nessun risultato per <b>' + esc(raw) + '</b> (ricerca per parole intere' + (useFt ? ', testi integrali inclusi' : ', prova a estendere ai testi integrali') + ').';
+  incremental(out, res, (x) => {
+    const e = x.e;
+    let sn = snippetAround(e.s, e.sf, terms, 80, 160);
+    if (!sn && e.kw) sn = snippetAround(e.kw, e.kwf, terms, 40, 90);
+    if (!sn && e.ent) sn = snippetAround(e.ent, e.entf, terms, 40, 90);
+    if (!sn && useFt && e.ft) sn = snippetAround(e.ft, e.ftf, terms, 90, 170);
+    if (!sn && e.t) sn = snippetAround(e.t, e.tf, terms, 40, 120);
+    const tag = '<span class="chip">' + esc(x.where.join(' · ')) + '</span> ';
+    return recRow(e.r, tag + (sn || ''), { hideTh: true });
+  }, 20, 'Nessun risultato.');
+}
+let qTimer = null;
+function scheduleSearch() { clearTimeout(qTimer); qTimer = setTimeout(runSearch, 180); }
+async function extendToFullText() {
+  const btn = $('qFull'), msg = $('qFullMsg'), wrap = $('qBarWrap'), bar = $('qBar');
+  btn.disabled = true;
+  wrap.classList.remove('hidden');
+  bar.style.width = '0%';
+  msg.textContent = 'Scarico i testi integrali…';
+  try {
+    await loadAllChunks((done, tot) => {
+      bar.style.width = (done / Math.max(1, tot) * 70).toFixed(1) + '%';
+      msg.textContent = 'Scarico i testi integrali… ' + done + ' / ' + tot;
+    });
+    msg.textContent = 'Preparo l\'indice…';
+    await indexAllFullText((i, n) => { bar.style.width = (70 + i / Math.max(1, n) * 30).toFixed(1) + '%'; });
+    bar.style.width = '100%';
+    btn.classList.add('hidden');
+    $('qFullOnWrap').classList.remove('hidden');
+    msg.textContent = 'Testi integrali disponibili: la ricerca li include.';
+    setTimeout(() => wrap.classList.add('hidden'), 600);
+    runSearch();
+  } catch (e) {
+    btn.disabled = false;
+    wrap.classList.add('hidden');
+    msg.textContent = errText(e);
+  }
+}
+
+/* ==========================================================================
+   16. VISTA 7 — MAPPA MENTALE
+   ========================================================================== */
+let mapInited = false;
+let mmMacro = new Set();   // macro espansi
+let mmTema = new Set();    // temi espansi
+let mmView = { x: 0, y: 0, k: 1 };
+let mmScene = null;
+const MM_MAX_RECS = 26;    // contenuti mostrati per tema
+
+function initMap() {
+  if (!mapInited) {
+    mapInited = true;
+    $('mmExpand').addEventListener('click', () => { mmMacro = new Set(MACRO.map((m) => m.id)); drawMap(); });
+    $('mmCollapse').addEventListener('click', () => { mmMacro = new Set(); mmTema = new Set(); drawMap(); });
+    $('mmReset').addEventListener('click', () => { mmView = { x: 0, y: 0, k: 1 }; drawMap(); });
+    bindMapEvents();
+  }
+  drawMap();
+}
+function mapScene() {
+  const svg = $('mindmap');
+  const W = Math.max(600, svg.clientWidth || 900);
+  let H = 780;
+  if (mmMacro.size) H = 1120;
+  if (mmTema.size) H = 1360;
+  const cx = W / 2, cy = H / 2;
+  const Rx = W * 0.27, Ry = H * 0.27;
+  const nodes = [], index = {};
+  const root = { id: 'root', type: 'root', label: 'Archivio', r: 24, x: cx, y: cy, count: RECORDS.length };
+  nodes.push(root); index[root.id] = root;
+  const maxC = Math.max(1, ...MACRO.map((m) => (MACRO_RECS[m.id] || []).length));
+  MACRO.forEach((m, i) => {
+    const a = -Math.PI / 2 + 2 * Math.PI * i / Math.max(1, MACRO.length);
+    const n = {
+      id: 'm:' + m.id, mid: m.id, type: 'macro', label: m.nome, a: a,
+      count: (MACRO_RECS[m.id] || []).length,
+      r: 13 + 12 * Math.sqrt(((MACRO_RECS[m.id] || []).length || 1) / maxC),
+      x: cx + Rx * Math.cos(a), y: cy + Ry * Math.sin(a)
+    };
+    nodes.push(n); index[n.id] = n;
+  });
+  mmMacro.forEach((mid) => {
+    const mn = index['m:' + mid];
+    if (!mn) return;
+    const temi = THEMES.filter((t) => t.macro === mid)
+      .sort((a, b) => (TH_RECS[b.id] || []).length - (TH_RECS[a.id] || []).length);
+    const nT = temi.length;
+    const spread = Math.min(2.3, 0.5 * nT);
+    temi.forEach((t, i) => {
+      const off = nT === 1 ? 0 : -spread / 2 + spread * i / (nT - 1);
+      const d = mn.r + 96 + (i % 2) * 58;
+      const ang = mn.a + off;
+      const n = {
+        id: 't:' + t.id, tid: t.id, type: 'tema', label: t.nome, a: ang,
+        count: (TH_RECS[t.id] || []).length,
+        r: 5.5 + Math.min(5, (TH_RECS[t.id] || []).length / 4),
+        x: mn.x + d * Math.cos(ang), y: mn.y + d * Math.sin(ang)
+      };
+      nodes.push(n); index[n.id] = n;
+      if (mmTema.has(t.id)) {
+        const recs = (TH_RECS[t.id] || []).slice(0, MM_MAX_RECS);
+        const nR = recs.length;
+        const spread2 = Math.min(1.5, 0.22 * nR);
+        recs.forEach((r, j) => {
+          const off2 = nR === 1 ? 0 : -spread2 / 2 + spread2 * j / (nR - 1);
+          const d2 = n.r + 74 + (j % 3) * 26;
+          const a2 = ang + off2;
+          const rn = {
+            id: 'r:' + r.id, rid: r.id, type: 'rec', label: trunc(r.t || '', 46),
+            fam: srcOf(r).fam, count: 0, r: 4,
+            x: n.x + d2 * Math.cos(a2), y: n.y + d2 * Math.sin(a2)
+          };
+          nodes.push(rn); index[rn.id] = rn;
+        });
+      }
+    });
+  });
+  nodes.forEach((n) => { n.x = Math.max(30, Math.min(W - 30, n.x)); n.y = Math.max(24, Math.min(H - 24, n.y)); });
+  const links = [];
+  MACRO.forEach((m) => links.push({ s: 'root', t: 'm:' + m.id, w: 1.2 }));
+  mmMacro.forEach((mid) => {
+    THEMES.filter((t) => t.macro === mid).forEach((t) => {
+      links.push({ s: 'm:' + mid, t: 't:' + t.id, w: 1 + Math.min(2.2, (TH_RECS[t.id] || []).length / 6) });
+      if (mmTema.has(t.id)) {
+        (TH_RECS[t.id] || []).slice(0, MM_MAX_RECS).forEach((r) => links.push({ s: 't:' + t.id, t: 'r:' + r.id, w: 0.7 }));
+      }
+    });
+  });
+  return { nodes: nodes, index: index, links: links.filter((l) => index[l.s] && index[l.t]), W: W, H: H };
+}
+function wrapLabel(s, max) {
+  max = max || 24;
+  if (s.length <= max) return [s];
+  const words = s.split(' ');
+  let best = null, bestDiff = 1e9;
+  for (let i = 1; i < words.length; i++) {
+    const a = words.slice(0, i).join(' '), b = words.slice(i).join(' ');
+    const diff = Math.abs(a.length - b.length);
+    if (diff < bestDiff) { bestDiff = diff; best = [a, b]; }
+  }
+  return best || [s];
+}
+function drawMap() {
+  const svg = $('mindmap');
+  mmScene = mapScene();
+  const sc = mmScene;
+  svg.setAttribute('viewBox', '0 0 ' + sc.W + ' ' + sc.H);
+  svg.style.height = Math.round(sc.H * (svg.clientWidth || sc.W) / sc.W) + 'px';
+  let g = '<g id="mmG" transform="translate(' + mmView.x + ',' + mmView.y + ') scale(' + mmView.k + ')">';
+  sc.links.forEach((l, i) => {
+    const s = sc.index[l.s], t = sc.index[l.t];
+    g += '<line data-i="' + i + '" x1="' + s.x.toFixed(1) + '" y1="' + s.y.toFixed(1) + '" x2="' + t.x.toFixed(1) + '" y2="' + t.y.toFixed(1) +
+      '" stroke="var(--baseline)" stroke-width="' + l.w.toFixed(2) + '" opacity="0.55"/>';
+  });
+  sc.nodes.forEach((n, i) => {
+    let fill = 'var(--accent)', stroke = 'var(--surface)', sw = 1.5;
+    if (n.type === 'root') { fill = 'var(--ink-1)'; }
+    else if (n.type === 'tema') { fill = 'var(--surface)'; stroke = 'var(--accent)'; sw = 2; }
+    else if (n.type === 'rec') { fill = n.fam === 'plaud' ? 'var(--plaud)' : 'var(--claude)'; sw = 1; }
+    g += '<circle class="mm-node" data-i="' + i + '" cx="' + n.x.toFixed(1) + '" cy="' + n.y.toFixed(1) + '" r="' + n.r.toFixed(1) +
+      '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + sw + '"/>';
+    if (n.type === 'macro' && !mmMacro.has(n.mid))
+      g += '<text x="' + n.x.toFixed(1) + '" y="' + (n.y + 4).toFixed(1) + '" text-anchor="middle" font-size="12" fill="#fff" pointer-events="none" font-weight="700">+</text>';
+    if (n.type === 'tema' && (TH_RECS[n.tid] || []).length && !mmTema.has(n.tid))
+      g += '<text x="' + n.x.toFixed(1) + '" y="' + (n.y + 3.2).toFixed(1) + '" text-anchor="middle" font-size="9" fill="var(--accent)" pointer-events="none" font-weight="700">+</text>';
+  });
+  sc.nodes.forEach((n, i) => {
+    if (n.type === 'rec' && sc.nodes.length > 220) return;
+    let lines = [n.label], fs = 10.5, cls = '', anchor = 'middle', lx = n.x, baseY = n.y - n.r - 6, dir = -1;
+    if (n.type === 'root') { fs = 14; cls = 'big'; baseY = n.y + 5; anchor = 'middle'; lines = [n.label]; dir = 1; }
+    else if (n.type === 'macro') {
+      fs = 12.5; cls = 'big'; lines = wrapLabel(n.label, 22);
+      const dx = Math.cos(n.a), dy = Math.sin(n.a);
+      if (Math.abs(dx) < 0.35) {
+        anchor = 'middle';
+        if (dy < 0) { baseY = n.y - n.r - 9; dir = -1; } else { baseY = n.y + n.r + 16; dir = 1; }
+      } else {
+        anchor = dx > 0 ? 'start' : 'end';
+        lx = n.x + (dx > 0 ? 1 : -1) * (n.r + 9);
+        baseY = n.y - (lines.length - 1) * 6.5 + 4; dir = 1;
+      }
+    } else if (n.type === 'tema') { fs = 10.5; lines = wrapLabel(n.label, 22); }
+    else { fs = 9; lines = [trunc(n.label, 30)]; }
+    if (n.type === 'root' && lines.length === 1) {
+      g += '<text class="mm-label big" text-anchor="middle" font-size="' + fs + '" x="' + n.x.toFixed(1) + '" y="' + (n.y + n.r + 16).toFixed(1) + '">' + esc(n.label) + '</text>';
+      return;
+    }
+    let txt = '<text class="mm-label ' + cls + '" data-i="' + i + '" text-anchor="' + anchor + '" font-size="' + fs + '">';
+    lines.forEach((ln, j) => {
+      const y = dir < 0 ? baseY - (lines.length - 1 - j) * (fs + 2) : baseY + j * (fs + 2);
+      txt += '<tspan x="' + lx.toFixed(1) + '" y="' + y.toFixed(1) + '">' + esc(ln) + '</tspan>';
+    });
+    g += txt + '</text>';
+  });
+  g += '</g>';
+  svg.innerHTML = g;
+}
+function bindMapEvents() {
+  const svg = $('mindmap');
+  const tip = $('mapTip');
+  const wrap = $('mapWrap');
+  const pointers = new Map();
+  let pan = null, pinch = null, moved = false;
+  function toWorld(cx, cy) {
+    const rect = svg.getBoundingClientRect();
+    if (!mmScene || !rect.width) return [0, 0];
+    const sx = (cx - rect.left) * mmScene.W / rect.width;
+    const sy = (cy - rect.top) * mmScene.H / rect.height;
+    return [(sx - mmView.x) / mmView.k, (sy - mmView.y) / mmView.k];
+  }
+  function nodeAtClient(cx, cy) {
+    if (!mmScene) return null;
+    const [x, y] = toWorld(cx, cy);
+    for (let i = mmScene.nodes.length - 1; i >= 0; i--) {
+      const n = mmScene.nodes[i];
+      const dx = x - n.x, dy = y - n.y, rr = (n.r + 7) * (n.r + 7);
+      if (dx * dx + dy * dy <= rr) return n;
+    }
+    return null;
+  }
+  function applyTransform() {
+    const gEl = svg.querySelector('#mmG');
+    if (gEl) gEl.setAttribute('transform', 'translate(' + mmView.x + ',' + mmView.y + ') scale(' + mmView.k + ')');
+  }
+  function highlight(node) {
+    const lines = svg.querySelectorAll('line');
+    const circles = svg.querySelectorAll('circle');
+    const labels = svg.querySelectorAll('text.mm-label');
+    if (!node) {
+      lines.forEach((el) => el.classList.remove('mm-dim'));
+      circles.forEach((el) => el.classList.remove('mm-dim'));
+      labels.forEach((el) => el.classList.remove('mm-dim'));
+      return;
+    }
+    const keep = new Set([node.id]);
+    mmScene.links.forEach((l) => { if (l.s === node.id || l.t === node.id) { keep.add(l.s); keep.add(l.t); } });
+    lines.forEach((el, j) => { const l = mmScene.links[j]; el.classList.toggle('mm-dim', !l || !(l.s === node.id || l.t === node.id)); });
+    circles.forEach((el) => { const n = mmScene.nodes[parseInt(el.dataset.i, 10)]; el.classList.toggle('mm-dim', !n || !keep.has(n.id)); });
+    labels.forEach((el) => { const n = mmScene.nodes[parseInt(el.dataset.i, 10)]; el.classList.toggle('mm-dim', !!n && !keep.has(n.id)); });
+  }
+  svg.addEventListener('pointerdown', (e) => {
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    try { svg.setPointerCapture(e.pointerId); } catch (err) { }
+    if (pointers.size === 1) {
+      pan = { x: e.clientX, y: e.clientY, vx: mmView.x, vy: mmView.y };
+      moved = false;
+      svg.classList.add('dragging');
+    } else if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), k: mmView.k };
+      pan = null;
+    }
+  });
+  svg.addEventListener('pointermove', (e) => {
+    if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinch.d > 4) { mmView.k = Math.max(0.4, Math.min(5, pinch.k * d / pinch.d)); applyTransform(); moved = true; }
+      return;
+    }
+    if (pan && mmScene) {
+      const rect = svg.getBoundingClientRect();
+      const dx = e.clientX - pan.x, dy = e.clientY - pan.y;
+      if (Math.abs(dx) + Math.abs(dy) > 5) moved = true;
+      if (moved) {
+        mmView.x = pan.vx + dx * mmScene.W / rect.width;
+        mmView.y = pan.vy + dy * mmScene.H / rect.height;
+        applyTransform();
+      }
+      return;
+    }
+    if (e.pointerType === 'mouse') {
+      const n = nodeAtClient(e.clientX, e.clientY);
+      highlight(n);
+      if (n) {
+        tip.innerHTML = n.type === 'root' ? '<b>Archivio</b> — ' + n.count + ' contenuti (clic: apri o chiudi tutti i filoni)'
+          : n.type === 'macro' ? '<b>' + esc(n.label) + '</b> — ' + n.count + ' contenuti (clic: apri o chiudi i temi)'
+          : n.type === 'tema' ? '<b>' + esc(n.label) + '</b> — ' + n.count + ' contenuti (clic: mostra i contenuti, doppio clic: apri il tema)'
+          : '<b>' + esc(n.label) + '</b> — ' + (n.fam === 'plaud' ? 'Plaud' : 'Claude') + ' (clic per leggere)';
+        tip.style.display = 'block';
+        const wr = wrap.getBoundingClientRect();
+        tip.style.left = Math.max(0, Math.min(e.clientX - wr.left + 12, wr.width - 300)) + 'px';
+        tip.style.top = (e.clientY - wr.top - 36) + 'px';
+      } else tip.style.display = 'none';
+    }
+  });
+  function endPointer(e) {
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinch = null;
+    if (pointers.size === 0) { pan = null; svg.classList.remove('dragging'); }
+  }
+  svg.addEventListener('pointerup', (e) => {
+    const wasMoved = moved;
+    endPointer(e);
+    if (wasMoved) return;
+    const n = nodeAtClient(e.clientX, e.clientY);
+    if (!n) return;
+    if (n.type === 'root') {
+      if (mmMacro.size) { mmMacro = new Set(); mmTema = new Set(); }
+      else mmMacro = new Set(MACRO.map((m) => m.id));
+      drawMap();
+    } else if (n.type === 'macro') {
+      if (mmMacro.has(n.mid)) {
+        mmMacro.delete(n.mid);
+        THEMES.filter((t) => t.macro === n.mid).forEach((t) => mmTema.delete(t.id));
+      } else mmMacro.add(n.mid);
+      drawMap();
+    } else if (n.type === 'tema') {
+      if (mmTema.has(n.tid)) mmTema.delete(n.tid); else mmTema.add(n.tid);
+      drawMap();
+    } else if (n.type === 'rec') {
+      openDetail(n.rid);
+    }
+  });
+  svg.addEventListener('pointercancel', endPointer);
+  svg.addEventListener('dblclick', (e) => {
+    const n = nodeAtClient(e.clientX, e.clientY);
+    if (n && n.type === 'tema') openTema(n.tid);
+  });
+  svg.addEventListener('mouseleave', () => { tip.style.display = 'none'; highlight(null); });
+  svg.addEventListener('wheel', (e) => {
+    if (!mmScene) return;
+    e.preventDefault();
+    const rect = svg.getBoundingClientRect();
+    const sx = (e.clientX - rect.left) * mmScene.W / rect.width;
+    const sy = (e.clientY - rect.top) * mmScene.H / rect.height;
+    const k2 = Math.max(0.4, Math.min(5, mmView.k * Math.pow(1.0015, -e.deltaY)));
+    mmView.x = sx - (sx - mmView.x) * k2 / mmView.k;
+    mmView.y = sy - (sy - mmView.y) * k2 / mmView.k;
+    mmView.k = k2;
+    applyTransform();
+  }, { passive: false });
+}
+
+/* ==========================================================================
+   17. VISTA 8 — REPORT
+   ========================================================================== */
+let REPORT_FONTI = [];
+function resolveRec(id) {
+  if (!id) return null;
+  if (BYID[id]) return BYID[id];
+  if (BYID['p_' + id]) return BYID['p_' + id];
+  if (BYID['c_' + id]) return BYID['c_' + id];
+  return null;
+}
+function renderReports() {
+  $('repList').innerHTML = REPORTS.length ? REPORTS.map((rep, i) => {
+    const nf = (rep.sezioni || []).reduce((a, s) => a + (s.paragrafi || []).reduce((b, p) => b + (p.fonti || []).length, 0), 0);
+    return '<article class="rec" data-rep="' + i + '" tabindex="0">' +
+      '<div class="hd"><div class="t">' + esc(rep.titolo || 'Report') + '</div></div>' +
+      '<div class="m"><span>' + esc(rep.data || '') + '</span><span>' + esc(rep.generato_da || '') + '</span>' +
+      '<span>' + (rep.sezioni || []).length + ' sezioni</span><span>' + nf + ' fonti citate</span></div>' +
+      '<div class="snip">' + esc(rep.domanda || '') + '</div></article>';
+  }).join('') : '<div class="empty">Nessun report presente nell\'archivio.</div>';
+}
+function fontiChips(fonti) {
+  return (fonti || []).map((f) => {
+    const r = resolveRec(f && f.rec);
+    if (!r) return '';
+    const i = REPORT_FONTI.push({ id: r.id, quote: f.quote || null }) - 1;
+    return '<span class="chip click fonte" data-fonte="' + i + '" title="' + esc(r.t || '') + ' — ' + esc(fmtDate.format(dayDate(r))) + '">' +
+      srcBadge(r) + esc(trunc(r.t || '(senza titolo)', 44)) +
+      '<span style="color:var(--muted);margin-left:5px">' + esc(fmtDateShort.format(dayDate(r))) + '</span></span>';
+  }).join('');
+}
+function reportPlain(rep) {
+  let out = (rep.titolo || '') + '\n' + 'Domanda: ' + (rep.domanda || '') + ' — ' + (rep.data || '') + '\n\n';
+  (rep.sezioni || []).forEach((s) => {
+    out += String(s.titolo || '').toUpperCase() + '\n';
+    (s.paragrafi || []).forEach((p) => {
+      const f = (p.fonti || []).map((x) => { const r = resolveRec(x.rec); return r ? r.t : null; }).filter(Boolean).join('; ');
+      out += (p.testo || '') + (f ? ' (Fonti: ' + f + ')' : '') + '\n\n';
+    });
+  });
+  if ((rep.strategia || []).length) {
+    out += 'RAGIONAMENTO STRATEGICO\n';
+    rep.strategia.forEach((s, j) => { out += (j + 1) + '. ' + (s.testo || '') + '\n\n'; });
+  }
+  return out;
+}
+function openReport(i) {
+  const rep = REPORTS[i];
+  if (!rep) return;
+  REPORT_FONTI = [];
+  show('report');
+  $('repIndex').classList.add('hidden');
+  const el = $('repView');
+  el.classList.remove('hidden');
+  let html = '<button class="backlink" data-back="rep">&#8592; Tutti i report</button>' +
+    '<div class="panel"><h2>' + esc(rep.titolo || 'Report') + '</h2>' +
+    '<div class="note">Domanda: ' + esc(rep.domanda || '') + ' — ' + esc(rep.data || '') + ' — ' + esc(rep.generato_da || '') + '</div>' +
+    '<div class="tools" style="margin-bottom:0"><button class="btn" data-repcopy="' + i + '">Copia il testo</button>' +
+    '<span style="color:var(--muted);font-size:12.5px">Clic su una fonte per aprire il contenuto con il brano usato evidenziato.</span></div>';
+  (rep.sezioni || []).forEach((sec) => {
+    html += '<h3 class="rep-sec">' + esc(sec.titolo || '') + '</h3>';
+    (sec.paragrafi || []).forEach((p) => {
+      html += '<div class="rep-p">' + esc(p.testo || '') + '<div class="fonti">' + fontiChips(p.fonti) + '</div></div>';
+    });
+  });
+  if ((rep.strategia || []).length) {
+    html += '<h3 class="rep-sec">Ragionamento strategico</h3>';
+    rep.strategia.forEach((s, j) => {
+      html += '<div class="rep-p"><b>' + (j + 1) + '.</b> ' + esc(s.testo || '') + '<div class="fonti">' + fontiChips(s.fonti) + '</div></div>';
+    });
+  }
+  html += '</div>';
+  el.innerHTML = html;
+  window.scrollTo(0, 0);
+}
+function backToReports() {
+  $('repView').classList.add('hidden');
+  $('repIndex').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+/* ==========================================================================
+   18. DETTAGLIO DEL CONTENUTO
+   ========================================================================== */
+let ovOpen = false;
+function openOverlayHistory() {
+  if (ovOpen) return;
+  ovOpen = true;
+  try { history.pushState({ ov: 1 }, ''); } catch (e) { }
+}
+function closeDetail(fromPop) {
+  if (!ovOpen) { $('overlay').classList.add('hidden'); return; }
+  ovOpen = false;
+  $('overlay').classList.add('hidden');
+  $('detailBody').innerHTML = '';
+  if (!fromPop) { try { if (history.state && history.state.ov) history.back(); } catch (e) { } }
+}
+/* inserisce i marcatori di citazione nel testo della sintesi */
+function injectQuotes(md, quotes) {
+  let out = String(md || '');
+  (quotes || []).forEach((q) => {
+    String(q || '').split('\n').map((s) => s.trim()).filter((s) => s.length >= 15).forEach((seg) => {
+      const i = out.indexOf(seg);
+      if (i >= 0) out = out.slice(0, i) + '\x01' + seg + '\x02' + out.slice(i + seg.length);
+    });
+  });
+  return out;
+}
+let DETAIL_SEQ = 0;
+function openDetail(id, quotes) {
+  const r = BYID[id];
+  if (!r) return;
+  const seq = ++DETAIL_SEQ;
+  const s = srcOf(r);
+  const d = dayDate(r);
+  const meta = [];
+  meta.push(fmtDate.format(d) + (hasTime(r) ? ', ore ' + fmtTime.format(parseTS(r.dt)) : ''));
+  if (r.src === 'plaud' && r.dur) meta.push('durata ' + durStr(r.dur));
+  if (r.tipo) meta.push(cap1(r.tipo));
+  if (r.fold) meta.push('cartella Plaud: ' + r.fold);
+  if (r.d2 && r.d2 !== r.d) meta.push('ultimo aggiornamento: ' + fmtDate.format(parseTS(r.d2 + 'T12:00:00Z')));
+  if (r.nm) meta.push(r.nm + ' ' + plural(r.nm, 'messaggio', 'messaggi'));
+  if (r.nd) meta.push(r.nd + ' ' + plural(r.nd, 'documento', 'documenti'));
+
+  $('detailHeadBody').innerHTML = '<div>' + srcBadge(r, true) + '</div>' +
+    '<h2>' + esc(r.t || '(senza titolo)') + '</h2>' +
+    '<div class="meta">' + meta.map(esc).join(' — ') + '</div>';
+
+  const rows = [];
+  if (r.sog.length) rows.push(['Soggetti', r.sog.map((x) => '<span class="chip click" data-sog="' + esc(x) + '">' + esc(x) + '</span>').join('')]);
+  if (r.prj) rows.push(['Progetto', '<span class="chip click" data-prj="' + esc(r.prj) + '">' + esc(r.prj) + '</span>']);
+  if (r.th.length) rows.push(['Temi', r.th.map((t) => THBY[t] ? '<span class="chip click" data-th="' + esc(t) + '">' + esc(THBY[t].nome) + '</span>' : '').join('')]);
+  if (r.part.length) rows.push(['Partecipanti', r.part.map((x) => '<span class="chip">' + esc(x) + '</span>').join('')]);
+  if (r.kw.length) rows.push(['Parole chiave', r.kw.map((x) => '<span class="chip click" data-q="' + esc(x) + '">' + esc(x) + '</span>').join('')]);
+  if (r.ent.length) rows.push(['Entità citate', r.ent.map((x) => '<span class="chip click" data-q="' + esc(x) + '">' + esc(x) + '</span>').join('')]);
+
+  const sinMd = quotes && r.sin ? injectQuotes(r.sin, quotes) : r.sin;
+  $('detailBody').innerHTML =
+    rows.map((x) => '<div class="dsec"><h3>' + x[0] + '</h3><div>' + x[1] + '</div></div>').join('') +
+    '<div class="dsec"><h3>Sintesi</h3>' +
+    (r.sin ? '<div class="sum">' + mdRender(sinMd) + '</div>' : '<div class="empty">Nessuna sintesi disponibile per questo contenuto.</div>') + '</div>' +
+    '<div class="dsec"><h3>' + (r.src === 'plaud' ? 'Trascrizione' : r.src === 'prog' ? 'Documenti del progetto' : 'Conversazione') + '</h3>' +
+    '<div id="txHost"><div class="load-line">Carico il contenuto integrale…</div></div></div>';
+
+  $('overlay').classList.remove('hidden');
+  $('detail').scrollTop = 0;
+  openOverlayHistory();
+
+  getTx(r).then((tx) => {
+    const host = $('txHost');
+    if (!host || seq !== DETAIL_SEQ) return;   // nel frattempo è stato aperto un altro contenuto
+    renderTx(host, r, tx, quotes);
+  }).catch((e) => {
+    const host = $('txHost');
+    if (host && seq === DETAIL_SEQ) host.innerHTML = '<div class="empty">Contenuto integrale non disponibile: ' + esc(errText(e)) + '</div>';
+  });
+  /* se la citazione è nella sintesi, portala in vista */
+  if (quotes && quotes.length) {
+    setTimeout(() => {
+      const el = document.querySelector('#detailBody mark.cite');
+      if (el) el.scrollIntoView({ block: 'center' });
+    }, 90);
+  }
+}
+function normSpace(s) { return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase(); }
+function renderTx(host, r, tx, quotes) {
+  const body = tx ? tx.tx : null;
+  const kind = (tx && tx.k) || r.src;
+  host.innerHTML = '';
+  /* --- registrazione Plaud: trascrizione a battute --- */
+  if (kind === 'plaud') {
+    let rows = [];
+    if (typeof body === 'string' && body.trim()) {
+      rows = body.split(/\n+/).filter((l) => l.trim()).map((l) => [null, '', l]);
+    } else if (Array.isArray(body)) {
+      rows = body.map((u) => Array.isArray(u) ? u : [u && u.ms, (u && u.sp) || '', (u && u.x) || '']);
+    }
+    if (!rows.length) { host.innerHTML = '<div class="empty">Trascrizione non disponibile per questa registrazione.</div>'; return; }
+    const cite = new Set();
+    if (quotes && quotes.length) {
+      quotes.forEach((q) => String(q || '').split('\n').map((x) => x.trim()).filter((x) => x.length >= 15).forEach((seg) => {
+        const ns = normSpace(seg);
+        rows.forEach((u, i) => {
+          const nu = normSpace(u[2]);
+          if (nu && (nu.indexOf(ns) >= 0 || (ns.length > 40 && nu.length > 30 && ns.indexOf(nu) >= 0))) cite.add(i);
+        });
+      }));
+    }
+    const ctrl = incremental(host, rows, (u, i) =>
+      '<div class="utt' + (cite.has(i) ? ' cite' : '') + '">' +
+      (u[0] != null ? '<div class="ts">' + tsStr(u[0]) + '</div>' : '') +
+      (u[1] ? '<div class="sp">' + esc(u[1]) + '</div>' : '') +
+      '<div class="tx">' + esc(u[2] || '') + '</div></div>', 150);
+    if (cite.size) {
+      const maxI = Math.max(...cite);
+      ctrl.ensure(maxI + 1);
+      setTimeout(() => {
+        const el = host.querySelector('.utt.cite');
+        if (el && !document.querySelector('#detailBody mark.cite')) el.scrollIntoView({ block: 'center' });
+      }, 60);
+    }
+    return;
+  }
+  /* --- progetto Claude: elenco documenti --- */
+  if (kind === 'prog') {
+    const docs = Array.isArray(body) ? body : [];
+    if (!docs.length) { host.innerHTML = '<div class="empty">Nessun documento caricato in questo progetto.</div>'; return; }
+    incremental(host, docs, (d, i) => docHtml(d, 'd' + i), 12);
+    return;
+  }
+  /* --- chat o sessione Design: conversazione a bolle --- */
+  const msgs = Array.isArray(body) ? body : [];
+  if (!msgs.length) { host.innerHTML = '<div class="empty">Conversazione vuota: nessun messaggio salvato per questo contenuto.</div>'; return; }
+  incremental(host, msgs, (m) => {
+    const s = (m && m.s) || 'a';
+    if (s === 'file') {
+      return '<div class="msg file"><div class="who">File caricato</div><div class="bub"><span class="att-name">' + esc(m.n || 'file') + '</span>' +
+        (m.x ? '<div style="margin-top:6px;white-space:pre-wrap">' + esc(trunc(m.x, 2000)) + '</div>' : ' — contenuto non estratto') + '</div></div>';
+    }
+    if (s === 'att') {
+      const txt = msgText(m);
+      return '<div class="msg att"><div class="who">Allegato</div><div class="bub"><span class="att-name">' + esc(m.n || 'allegato') + '</span>' +
+        (txt ? '<div style="margin-top:6px;white-space:pre-wrap">' + esc(trunc(txt, 4000)) + '</div>' : ' — contenuto non estratto') + '</div></div>';
+    }
+    const txt = msgText(m);
+    if (s === 'h') {
+      return '<div class="msg h"><div class="who">Andrea</div><div class="bub">' + (txt ? esc(txt) : '<i style="color:var(--muted)">messaggio senza testo</i>') + '</div></div>';
+    }
+    return '<div class="msg a"><div class="who">Claude</div><div class="bub">' +
+      (txt ? mdRender(txt) : '<i style="color:var(--muted)">passaggio tecnico della sessione, senza testo</i>') + '</div></div>';
+  }, 20);
+}
+
+/* ==========================================================================
+   19. EVENTI GLOBALI E AVVIO
+   ========================================================================== */
+function renderAll() {
+  $('navSog').textContent = SOGG.length;
+  $('navPrj').textContent = PROGETTI.length;
+  $('navTemi').textContent = THEMES.length;
+  $('navData').textContent = RECORDS.length;
+  $('navRep').textContent = REPORTS.length;
+  $('sideCounts').innerHTML = countsHtml(countBySrc(RECORDS));
+  $('sideRange').textContent = periodoLabel();
+  renderHome();
+  renderSoggetti();
+  renderProgetti();
+  renderTemi();
+  initDataFilters();
+  renderData();
+  renderReports();
+  runSearch();
+}
+/* navigazione laterale */
+$('nav').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-view]');
+  if (b) show(b.dataset.view);
+});
+$('menuBtn').addEventListener('click', openSidebar);
+$('scrim').addEventListener('click', closeSidebar);
+$('lockBtn').addEventListener('click', lockArchive);
+$('closeDetail').addEventListener('click', () => closeDetail());
+$('overlay').addEventListener('click', (e) => { if (e.target.id === 'overlay') closeDetail(); });
+window.addEventListener('popstate', () => { if (ovOpen) closeDetail(true); });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (ovOpen) closeDetail();
+    else closeSidebar();
+  }
+});
+/* delegazione: schede, chip e righe */
+document.addEventListener('click', (e) => {
+  const t = e.target;
+  const back = t.closest('[data-back]');
+  if (back) {
+    const k = back.dataset.back;
+    if (k === 'sog') backToSoggetti();
+    else if (k === 'prj') backToProgetti();
+    else if (k === 'temi') backToTemi();
+    else if (k === 'macro') { const mid = back.dataset.mid; if (mid && MACROBY[mid]) openMacro(mid); else backToTemi(); }
+    else if (k === 'rep') backToReports();
+    return;
+  }
+  const fonte = t.closest('[data-fonte]');
+  if (fonte) {
+    const f = REPORT_FONTI[parseInt(fonte.dataset.fonte, 10)];
+    if (f) openDetail(f.id, f.quote ? [f.quote] : null);
+    return;
+  }
+  const th = t.closest('[data-th]');
+  if (th) { e.stopPropagation(); closeDetail(); openTema(th.dataset.th); return; }
+  const sog = t.closest('[data-sog]');
+  if (sog) { e.stopPropagation(); closeDetail(); openSoggetto(sog.dataset.sog); return; }
+  const sogc = t.closest('[data-sogcard]');
+  if (sogc) { openSoggetto(sogc.dataset.sogcard); return; }
+  const prj = t.closest('[data-prj]');
+  if (prj) { e.stopPropagation(); closeDetail(); openProgetto(prj.dataset.prj); return; }
+  const macro = t.closest('[data-macro]');
+  if (macro) { openMacro(macro.dataset.macro); return; }
+  const tema = t.closest('[data-tema]');
+  if (tema) { openTema(tema.dataset.tema); return; }
+  const q = t.closest('[data-q]');
+  if (q) {
+    e.stopPropagation();
+    closeDetail();
+    show('ricerca');
+    $('q').value = q.dataset.q;
+    runSearch();
+    return;
+  }
+  const open = t.closest('[data-open]');
+  if (open) { openDetail(open.dataset.open); return; }
+  const rep = t.closest('[data-rep]');
+  if (rep) { openReport(parseInt(rep.dataset.rep, 10)); return; }
+  const dt = t.closest('[data-doctoggle]');
+  if (dt) {
+    const doc = dt.closest('.doc');
+    const dc = doc.querySelector('.dc');
+    const open2 = dc.classList.contains('hidden');
+    dc.classList.toggle('hidden', !open2);
+    dt.querySelector('.tg').textContent = open2 ? 'chiudi' : 'apri';
+    return;
+  }
+  const rec = t.closest('.rec[data-id]');
+  if (rec) { openDetail(rec.dataset.id); return; }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  const rec = e.target.closest && e.target.closest('.rec[data-id]');
+  if (rec) { e.preventDefault(); openDetail(rec.dataset.id); return; }
+  const rep = e.target.closest && e.target.closest('[data-rep]');
+  if (rep) { e.preventDefault(); openReport(parseInt(rep.dataset.rep, 10)); }
+});
+/* copia del testo di un report */
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-repcopy]');
+  if (!b) return;
+  const rep = REPORTS[parseInt(b.dataset.repcopy, 10)];
+  if (!rep) return;
+  const txt = reportPlain(rep);
+  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => { b.textContent = 'Testo copiato'; setTimeout(() => { b.textContent = 'Copia il testo'; }, 1800); }).catch(() => { });
+});
+/* controlli delle viste */
+$('sogSort').addEventListener('change', renderSoggetti);
+$('prjSort').addEventListener('change', renderProgetti);
+$('q').addEventListener('input', scheduleSearch);
+$('qFull').addEventListener('click', extendToFullText);
+$('qFullOn').addEventListener('change', runSearch);
+bindSeg($('qSrc'), (v) => { qFiltro = v; runSearch(); });
+$('gateForm').addEventListener('submit', onGateSubmit);
+/* ridisegno grafico e mappa al ridimensionamento */
+let rsTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(rsTimer);
+  rsTimer = setTimeout(() => {
+    if (!CORE) return;
+    drawChart();
+    if (mapInited && CURRENT_VIEW === 'mappa') drawMap();
+  }, 220);
+});
+/* avvio */
+if (!window.crypto || !window.crypto.subtle) {
+  gateMsg('Questo browser non espone WebCrypto: apri il sito via HTTPS con un browser aggiornato.', true);
+  $('gateGo').disabled = true;
+} else {
+  tryAutoUnlock();
+}
+</script>
+</body>
+</html>
