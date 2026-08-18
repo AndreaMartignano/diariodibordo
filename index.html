@@ -658,6 +658,11 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
    ========================================================================== */
 const $ = (id) => document.getElementById(id);
 const DATA_DIR = './data/';
+let DATA_VER = '';  // versione dei file dati, ricavata dal manifest (anti-cache)
+function withVer(url) {
+  if (!DATA_VER) return url;
+  return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(DATA_VER);
+}
 
 function esc(s) {
   return String(s == null ? '' : s)
@@ -904,10 +909,14 @@ async function decryptJSON(buf) {
 }
 async function loadManifest() {
   let resp;
-  try { resp = await fetch(DATA_DIR + 'manifest.json'); }
+  const bust = 'nc=' + Date.now();
+  try { resp = await fetch(DATA_DIR + 'manifest.json?' + bust, { cache: 'no-store' }); }
   catch (e) { const err = new Error('Impossibile contattare il server dei dati'); err.code = 'NET'; throw err; }
   if (!resp.ok) { const err = new Error('manifest.json non trovato (' + resp.status + ')'); err.code = 'HTTP'; throw err; }
-  return resp.json();
+  const json = await resp.json();
+  const tag = resp.headers.get('ETag') || resp.headers.get('Last-Modified') || '';
+  DATA_VER = tag ? tag.replace(/[^A-Za-z0-9]/g, '').slice(-24) : ('n' + (json.n_chunks || 0));
+  return json;
 }
 function chunkName(i) {
   if (MAN && MAN.chunks && MAN.chunks[i]) return MAN.chunks[i];
@@ -918,7 +927,7 @@ function loadChunk(i) {
   if (CHUNKS.has(i)) return Promise.resolve(CHUNKS.get(i));
   if (CHUNK_PROM.has(i)) return CHUNK_PROM.get(i);
   const p = (async () => {
-    const buf = await fetchBytes(DATA_DIR + chunkName(i));
+    const buf = await fetchBytes(withVer(DATA_DIR + chunkName(i)));
     const obj = await decryptJSON(buf);
     CHUNKS.set(i, obj);
     CHUNK_PROM.delete(i);
@@ -984,7 +993,7 @@ async function unlock(keyBytes, remember) {
   KEY = await importAesKey(keyBytes);
   gateProgress(35);
   gateMsg('Scarico l\'archivio…');
-  const buf = await fetchBytes(DATA_DIR + (MAN.core || 'core.bin'));
+  const buf = await fetchBytes(withVer(DATA_DIR + (MAN.core || 'core.bin')));
   gateProgress(70);
   gateMsg('Decifro e apro l\'archivio…');
   CORE = await decryptJSON(buf);
