@@ -239,6 +239,37 @@ h1.view-h { font-size: 21px; margin: 0 0 3px 0; font-weight: 650; letter-spacing
 .b-dorm { background: rgba(191, 54, 40, .13); color: #d05646; }
 .eco-q { margin: -3px 2px 10px; color: var(--ink-2); font-size: 12.5px; font-style: italic; }
 
+/* --- incroci: matrice --- */
+.mx-wrap { overflow: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); max-height: 74vh; }
+table.mx { border-collapse: separate; border-spacing: 0; font-size: 12px; }
+.mx th, .mx td { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 0; }
+.mx thead th { position: sticky; top: 0; background: var(--surface); z-index: 3; vertical-align: bottom; padding: 6px 3px 4px; }
+.mx thead th:first-child { left: 0; z-index: 4; }
+.mx thead th .vh { writing-mode: vertical-rl; transform: rotate(180deg); max-height: 150px; overflow: hidden; white-space: nowrap; font-weight: 600; color: var(--ink-2); border: 0; background: transparent; cursor: pointer; font: inherit; font-size: 11.5px; padding: 0; }
+.mx tbody th { position: sticky; left: 0; background: var(--surface); z-index: 2; text-align: left; font-weight: 600; }
+.mx tbody th .mx-r { border: 0; background: transparent; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; color: var(--ink-2); padding: 6px 8px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; text-align: left; }
+.mx td button { width: 100%; min-width: 30px; min-height: 28px; border: 0; background: transparent; cursor: pointer; font: inherit; font-size: 11px; color: var(--ink-1); display: block; }
+.mx td button:hover { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* --- incroci: timeline --- */
+.tl-scale { position: relative; height: 18px; margin: 0 0 2px 172px; }
+.tl-scale span { position: absolute; font-size: 10.5px; color: var(--muted); transform: translateX(-50%); white-space: nowrap; }
+.tl-row { display: flex; align-items: stretch; border-top: 1px solid var(--border); }
+.tl-lab { flex: 0 0 164px; max-width: 164px; border: 0; background: transparent; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; color: var(--ink-2); text-align: left; padding: 8px 8px 8px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-track { position: relative; flex: 1; min-height: 34px; }
+.tl-dot { position: absolute; top: 50%; width: 9px; height: 9px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; opacity: .85; }
+.tl-dot.f-plaud { background: var(--plaud); }
+.tl-dot.f-claude { background: var(--claude); }
+.tl-dot:hover { outline: 2px solid var(--ink-1); }
+.tl-flag { position: absolute; top: 0; transform: translateX(-50%); border: 0; background: transparent; cursor: pointer; font-size: 11px; color: var(--accent); padding: 0; line-height: 1; }
+.tl-flag.past { color: var(--muted); }
+.tl-now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); opacity: .35; }
+@media (max-width: 700px) { .tl-lab { flex-basis: 110px; max-width: 110px; } .tl-scale { margin-left: 118px; } }
+
+/* --- dossier soggetto --- */
+.dossier { border: 1px solid var(--border); border-radius: 12px; padding: 4px 12px 10px; margin: 0 0 12px; }
+.do-k { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); display: block; margin: 10px 0 2px; }
+
 .rec {
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
   padding: 11px 14px; margin-bottom: 8px; cursor: pointer; position: relative;
@@ -478,7 +509,9 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
       <button data-view="persone"><span>Persone</span><span class="n" id="navPers"></span></button>
       <button data-view="stato"><span>Stato</span></button>
       <button data-view="scadenze"><span>Scadenze</span><span class="n" id="navScad"></span></button>
+      <button data-view="impegni"><span>Impegni</span><span class="n" id="navImp"></span></button>
       <button data-view="numeri"><span>Numeri</span></button>
+      <button data-view="incroci"><span>Incroci</span></button>
       <button data-view="ricerca"><span>Ricerca</span></button>
       <button data-view="mappa"><span>Mappa</span></button>
       <button data-view="report"><span>Report</span><span class="n" id="navRep"></span></button>
@@ -648,6 +681,21 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
         <h1 class="view-h">Numeri</h1>
         <div class="view-note">La memoria negoziale: cifre, percentuali e condizioni economiche citate nelle riunioni e negli accordi, raggruppate per dossier. Un clic apre la fonte con il passaggio evidenziato in giallo.</div>
         <div id="ecoList"></div>
+      </section>
+
+      <!-- ---------- Impegni ---------- -->
+      <section id="view-impegni" class="view hidden">
+        <h1 class="view-h">Impegni</h1>
+        <div class="view-note">Le promesse senza data emerse dalle conversazioni: sopra quello che devi fare tu, sotto quello che aspetti dagli altri. La data è quella del contenuto in cui l'impegno è stato preso: un clic apre la fonte con il passaggio evidenziato in giallo.</div>
+        <div id="impList"></div>
+      </section>
+
+      <!-- ---------- Incroci ---------- -->
+      <section id="view-incroci" class="view hidden">
+        <h1 class="view-h">Incroci</h1>
+        <div class="view-note" id="incNote"></div>
+        <div class="tools"><div class="seg" id="incSeg"></div><span id="incCtl" style="display:inline-flex"></span></div>
+        <div id="incBody"></div>
       </section>
 
       <section id="view-ricerca" class="view hidden">
@@ -1193,10 +1241,11 @@ function buildState() {
 /* ==========================================================================
    7. NAVIGAZIONE
    ========================================================================== */
-const VIEWS = ['home', 'soggetti', 'progetti', 'temi', 'data', 'persone', 'stato', 'scadenze', 'numeri', 'ricerca', 'mappa', 'report'];
+const VIEWS = ['home', 'soggetti', 'progetti', 'temi', 'data', 'persone', 'stato', 'scadenze', 'impegni', 'numeri', 'incroci', 'ricerca', 'mappa', 'report'];
 const VIEW_TITLES = {
   home: 'Panoramica', soggetti: 'Soggetti', progetti: 'Progetti', temi: 'Temi',
   data: 'Per data', persone: 'Persone', stato: 'Stato', scadenze: 'Scadenze', numeri: 'Numeri',
+  impegni: 'Impegni', incroci: 'Incroci',
   ricerca: 'Ricerca', mappa: 'Mappa', report: 'Report'
 };
 let CURRENT_VIEW = 'home';
@@ -1469,6 +1518,7 @@ function openSoggetto(nome) {
     '<div class="note">' + recs.length + ' ' + plural(recs.length, 'contenuto', 'contenuti') +
     (recs.length ? ' — dal ' + fmtDate.format(dayDate(recs[recs.length - 1])) + ' al ' + fmtDate.format(dayDate(recs[0])) : '') + '</div>' +
     '<div style="margin-bottom:10px">' + countsOf(recs) + '</div>' +
+    dossierHtml(nome, senza) +
     (topTh ? '<div class="note" style="margin-bottom:4px">Temi ricorrenti</div><div style="margin-bottom:8px">' + topTh + '</div>' : '') +
     (prj ? '<div class="note" style="margin-bottom:4px">Progetti collegati</div><div style="margin-bottom:8px">' + prj + '</div>' : '') +
     '<div class="tools" style="margin-bottom:0"><div class="seg" id="sogSeg"></div></div></div>' +
@@ -1939,6 +1989,7 @@ function openPersona(nome) {
     '<div class="view-note">' + (p.note ? esc(p.note) + ' · ' : '') + p.recs.length + ' ' + plural(p.recs.length, 'contenuto', 'contenuti') +
     ', dal ' + fmtDateShort.format(dayDate(p.recs[p.recs.length - 1])) + ' al ' + fmtDateShort.format(dayDate(p.recs[0])) + '.</div>' +
     (topTh ? '<div class="th" style="margin:0 0 14px">' + topTh + '</div>' : '') +
+    coHtml(p) +
     '<div id="persRecs"></div>';
   incremental($('persRecs'), p.recs, function (r) { return recRow(r); }, 25);
   window.scrollTo(0, 0);
@@ -2024,6 +2075,267 @@ function renderNumeri() {
   $('ecoList').innerHTML = html || '<div class="empty">Nessun dato economico registrato.</div>';
 }
 $('persSort').addEventListener('change', renderPersone);
+
+/* ==========================================================================
+   15c. VISTE IMPEGNI + INCROCI + DOSSIER SOGGETTO
+   ========================================================================== */
+function todayStr() {
+  const t = new Date();
+  return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+}
+function ddmm(d) { const p = String(d).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+function renderImpegni() {
+  const all = (CORE.imp || []).map(function (x, i) { return [x, i]; });
+  $('navImp').textContent = all.length || '';
+  function row(e) {
+    const x = e[0];
+    return '<button class="staterow" data-imp="' + e[1] + '">' +
+      '<span class="sr-date">' + ddmm(x.d) + '</span>' +
+      '<span class="sr-n">' + esc(x.t) + '</span>' +
+      '<span class="sr-sub">' + esc(x.p || '') + '</span></button>' +
+      '<div class="eco-q">«' + esc(x.q) + '»</div>';
+  }
+  const io = all.filter(function (e) { return e[0].who === 'io'; }).sort(function (a, b) { return a[0].d < b[0].d ? 1 : -1; });
+  const loro = all.filter(function (e) { return e[0].who !== 'io'; }).sort(function (a, b) { return a[0].d < b[0].d ? 1 : -1; });
+  $('impList').innerHTML =
+    '<div class="rec-group"><h3>Cosa devo fare io (' + io.length + ')</h3></div>' +
+    (io.map(row).join('') || '<div class="empty">Niente in lista.</div>') +
+    '<div class="rec-group" style="margin-top:20px"><h3>Cosa aspetto dagli altri (' + loro.length + ')</h3></div>' +
+    (loro.map(row).join('') || '<div class="empty">Niente in lista.</div>');
+}
+
+/* ---- incroci ---- */
+let incMode = 'matrice', matDim = 'temi', tlDim = 'soggetti';
+let MX_ROWS = [], MX_COLS = [];
+let CONN = null;
+function dimSegHtml(cur, dims) {
+  return '<div class="seg" style="margin-left:8px">' + dims.map(function (d) {
+    return '<button type="button" class="' + (cur === d[0] ? 'on' : '') + '" data-incdim="' + d[0] + '">' + d[1] + '</button>';
+  }).join('') + '</div>';
+}
+function renderIncroci() {
+  const modes = [['matrice', 'Matrice'], ['timeline', 'Timeline'], ['connessioni', 'Connessioni']];
+  $('incSeg').innerHTML = modes.map(function (m) {
+    return '<button type="button" class="' + (incMode === m[0] ? 'on' : '') + '" data-inc="' + m[0] + '">' + m[1] + '</button>';
+  }).join('');
+  if (incMode === 'matrice') renderMatrice();
+  else if (incMode === 'timeline') renderTimeline();
+  else renderConnessioni();
+}
+function cellBg(n, max) {
+  if (!n) return '';
+  const a = 0.10 + 0.55 * Math.min(1, n / max);
+  return 'background:rgba(42,120,214,' + a.toFixed(2) + ');' + (n / max > 0.55 ? 'color:#fff' : '');
+}
+function renderMatrice() {
+  $('incCtl').innerHTML = dimSegHtml(matDim, [['temi', 'Soggetti × Temi'], ['progetti', 'Soggetti × Progetti']]);
+  $('incNote').textContent = 'Ogni cella conta i contenuti che legano quel soggetto (riga) a quel ' + (matDim === 'temi' ? 'tema' : 'progetto') + ' (colonna): più il colore è pieno, più il legame è forte. Un clic sulla cella elenca i contenuti; un clic su riga o colonna apre la pagina dedicata.';
+  const ROWCAP = 30, COLCAP = 36;
+  const rows = SOGG.slice().sort(function (a, b) { return b.recs.length - a.recs.length; }).slice(0, ROWCAP);
+  let cols;
+  if (matDim === 'temi') cols = THEMES.map(function (t) { return { id: t.id, nome: t.nome, n: (TH_RECS[t.id] || []).length }; });
+  else cols = PROGETTI.map(function (p) { return { id: p.nome, nome: p.nome, n: p.all.length }; });
+  cols = cols.filter(function (c) { return c.n > 0; }).sort(function (a, b) { return b.n - a.n; }).slice(0, COLCAP);
+  MX_ROWS = rows; MX_COLS = cols;
+  const M = rows.map(function (s) {
+    return cols.map(function (c) {
+      if (matDim === 'temi') return s.recs.filter(function (r) { return r.th.indexOf(c.id) >= 0; }).length;
+      return s.recs.filter(function (r) { return (r.prj || '') === c.id || (r.src === 'prog' && r.t === c.id); }).length;
+    });
+  });
+  let max = 1;
+  M.forEach(function (rr) { rr.forEach(function (n) { if (n > max) max = n; }); });
+  const colAttr = matDim === 'temi' ? 'data-tema' : 'data-prj';
+  let html = '<div class="mx-wrap"><table class="mx"><thead><tr><th></th>' +
+    cols.map(function (c) { return '<th><button class="vh" ' + colAttr + '="' + esc(c.id) + '" title="' + esc(c.nome) + '">' + esc(c.nome) + '</button></th>'; }).join('') +
+    '</tr></thead><tbody>';
+  rows.forEach(function (s, i) {
+    html += '<tr><th><button class="mx-r" data-sogcard="' + esc(s.nome) + '" title="' + esc(s.nome) + '">' + esc(s.nome) + '</button></th>' +
+      cols.map(function (c, j) {
+        const n = M[i][j];
+        return '<td><button data-mcell="' + i + '|' + j + '" style="' + cellBg(n, max) + '"' + (n ? '' : ' tabindex="-1"') + '>' + (n || '') + '</button></td>';
+      }).join('') + '</tr>';
+  });
+  html += '</tbody></table></div>' +
+    '<div class="note" style="margin-top:8px">' + (SOGG.length > ROWCAP ? 'Mostrati i primi ' + ROWCAP + ' soggetti per numero di contenuti (su ' + SOGG.length + '). ' : '') + 'Colonne ordinate per volume di contenuti.</div>' +
+    '<div id="incFocus"></div>';
+  $('incBody').innerHTML = html;
+}
+function openMatCell(key) {
+  const p = key.split('|');
+  const s = MX_ROWS[parseInt(p[0], 10)], c = MX_COLS[parseInt(p[1], 10)];
+  if (!s || !c) return;
+  let recs;
+  if (matDim === 'temi') recs = s.recs.filter(function (r) { return r.th.indexOf(c.id) >= 0; });
+  else recs = s.recs.filter(function (r) { return (r.prj || '') === c.id || (r.src === 'prog' && r.t === c.id); });
+  const host = $('incFocus');
+  if (!host) return;
+  host.innerHTML = '<div class="rec-group" style="margin-top:18px"><h3>' + esc(s.nome) + ' × ' + esc(c.nome) + ' (' + recs.length + ')</h3></div><div id="incFocusList"></div>';
+  incremental($('incFocusList'), recs, function (r) { return recRow(r); }, 25);
+  host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function monthStart(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+function renderTimeline() {
+  $('incCtl').innerHTML = dimSegHtml(tlDim, [['soggetti', 'Soggetti'], ['temi', 'Temi'], ['progetti', 'Progetti']]);
+  $('incNote').textContent = 'Una corsia per ' + (tlDim === 'soggetti' ? 'soggetto' : (tlDim === 'temi' ? 'tema' : 'progetto')) + ': ogni punto è un contenuto (blu Plaud, arancio Claude), le bandierine ⚑ sono le scadenze collegate, la linea verticale è oggi. Finestra: ultimi 12 mesi e prossimi 4. Un clic sul punto apre il contenuto, sulla bandierina la scadenza, sul nome la pagina dedicata.';
+  const now = Date.now();
+  const start = monthStart(new Date(now - 365 * 86400000)).getTime();
+  const end = now + 120 * 86400000;
+  function xpc(ts) { return Math.max(0, Math.min(100, (ts - start) / (end - start) * 100)); }
+  let lanes;
+  if (tlDim === 'soggetti') lanes = SOGG.map(function (s) { return { nome: s.nome, attr: 'data-sogcard="' + esc(s.nome) + '"', recs: s.recs }; });
+  else if (tlDim === 'temi') lanes = THEMES.map(function (t) { return { nome: t.nome, attr: 'data-tema="' + esc(t.id) + '"', recs: TH_RECS[t.id] || [], id: t.id }; });
+  else lanes = PROGETTI.map(function (p) { return { nome: p.nome, attr: 'data-prj="' + esc(p.nome) + '"', recs: p.all }; });
+  lanes.forEach(function (l) { l.win = l.recs.filter(function (r) { return r._ts >= start; }); });
+  lanes = lanes.filter(function (l) { return l.win.length; })
+    .sort(function (a, b) { return b.win.length - a.win.length; }).slice(0, 14)
+    .sort(function (a, b) { return (b.recs[0] ? b.recs[0]._ts : 0) - (a.recs[0] ? a.recs[0]._ts : 0); });
+  const dls = (CORE.deadlines || []).map(function (x, i) { return [x, i]; });
+  const today = todayStr();
+  function laneDl(l) {
+    return dls.filter(function (e) {
+      const sr = BYID[e[0].rec];
+      if (!sr) return false;
+      if (tlDim === 'soggetti') return sr.sog.indexOf(l.nome) >= 0;
+      if (tlDim === 'temi') return sr.th.indexOf(l.id) >= 0;
+      return (sr.prj || '') === l.nome || (sr.src === 'prog' && sr.t === l.nome);
+    });
+  }
+  const fmtM = new Intl.DateTimeFormat('it-IT', { month: 'short' });
+  let scale = '';
+  let mcur = monthStart(new Date(start));
+  while (mcur.getTime() < end) {
+    const lab = fmtM.format(mcur) + (mcur.getMonth() === 0 ? ' ' + String(mcur.getFullYear()).slice(2) : '');
+    scale += '<span style="left:' + xpc(mcur.getTime()).toFixed(2) + '%">' + lab + '</span>';
+    mcur = new Date(mcur.getFullYear(), mcur.getMonth() + 1, 1);
+  }
+  let html = '<div class="tl-scale">' + scale + '</div>';
+  lanes.forEach(function (l) {
+    let dots = '';
+    l.win.forEach(function (r) {
+      dots += '<span class="tl-dot f-' + srcOf(r).fam + '" style="left:' + xpc(r._ts).toFixed(2) + '%" data-open="' + esc(r.id) + '" title="' + esc((r.d || '') + ' — ' + (r.t || '')) + '"></span>';
+    });
+    laneDl(l).forEach(function (e) {
+      const ts = new Date(e[0].d + 'T12:00:00').getTime();
+      dots += '<button class="tl-flag' + (e[0].d < today ? ' past' : '') + '" style="left:' + xpc(ts).toFixed(2) + '%" data-scad="' + e[1] + '" title="' + esc(ddmm(e[0].d) + ' — ' + e[0].t) + '">⚑</button>';
+    });
+    html += '<div class="tl-row"><button class="tl-lab" ' + l.attr + ' title="' + esc(l.nome) + '">' + esc(l.nome) + '</button>' +
+      '<div class="tl-track"><span class="tl-now" style="left:' + xpc(now).toFixed(2) + '%"></span>' + dots + '</div></div>';
+  });
+  html += '<div class="note" style="margin-top:8px">Corsie: le 14 più attive negli ultimi 12 mesi, in alto quelle con attività più recente.</div>';
+  $('incBody').innerHTML = html;
+}
+function buildConn() {
+  if (CONN) return CONN;
+  const map = {};
+  (CORE.people || []).forEach(function (p, i) {
+    (p.a || []).concat([p.n]).forEach(function (al) { map[fold(al)] = i; });
+  });
+  const names = (CORE.people || []).map(function (p) { return p.n; });
+  const pairs = new Map();
+  const perRec = {};
+  const psog = names.map(function () { return new Set(); });
+  RECORDS.forEach(function (r) {
+    const set = new Set();
+    (r.part || []).concat(r.ent || []).forEach(function (x) {
+      const i = map[fold(String(x).trim())];
+      if (i != null) set.add(i);
+    });
+    const arr = [...set];
+    perRec[r.id] = arr;
+    arr.forEach(function (i) { r.sog.forEach(function (s) { psog[i].add(s); }); });
+    for (let a = 0; a < arr.length; a++) for (let b = a + 1; b < arr.length; b++) {
+      const k = Math.min(arr[a], arr[b]) + '|' + Math.max(arr[a], arr[b]);
+      if (!pairs.has(k)) pairs.set(k, []);
+      pairs.get(k).push(r);
+    }
+  });
+  CONN = { names: names, pairs: pairs, perRec: perRec, psog: psog };
+  return CONN;
+}
+function renderConnessioni() {
+  $('incCtl').innerHTML = '';
+  $('incNote').textContent = 'Chi compare insieme a chi negli stessi contenuti: le coppie più frequenti e le persone-ponte che collegano più dossier. Un clic su una coppia elenca gli incontri comuni; un clic su un nome apre la pagina della persona.';
+  const c = buildConn();
+  const top = [...c.pairs.entries()].map(function (e) { return { k: e[0], recs: e[1] }; })
+    .sort(function (a, b) { return b.recs.length - a.recs.length; }).slice(0, 20);
+  let html = '<div class="rec-group"><h3>Coppie più frequenti</h3></div>';
+  if (!top.length) html += '<div class="empty">Nessuna coppia trovata.</div>';
+  top.forEach(function (p) {
+    const ij = p.k.split('|');
+    const sogs = [...new Set([].concat.apply([], p.recs.map(function (r) { return r.sog; })))].slice(0, 3);
+    html += '<button class="staterow" data-pair="' + p.k + '">' +
+      '<span class="sr-n">' + esc(c.names[ij[0]]) + ' + ' + esc(c.names[ij[1]]) + '</span>' +
+      '<span class="sr-meta">' + p.recs.length + ' ' + plural(p.recs.length, 'incontro comune', 'incontri comuni') + (sogs.length ? ' · ' + esc(sogs.join(', ')) : '') + '</span></button>';
+  });
+  const bridges = c.names.map(function (n, i) { return { n: n, sogs: [...c.psog[i]] }; })
+    .filter(function (b) { return b.sogs.length >= 2; })
+    .sort(function (a, b) { return b.sogs.length - a.sogs.length; }).slice(0, 15);
+  html += '<div class="rec-group" style="margin-top:20px"><h3>Persone-ponte (collegano più dossier)</h3></div>';
+  if (!bridges.length) html += '<div class="empty">Nessuna.</div>';
+  bridges.forEach(function (b) {
+    html += '<button class="staterow" data-person="' + esc(b.n) + '">' +
+      '<span class="sr-n">' + esc(b.n) + '</span>' +
+      '<span class="sr-meta">' + b.sogs.length + ' dossier: ' + esc(b.sogs.slice(0, 4).join(', ')) + (b.sogs.length > 4 ? '…' : '') + '</span></button>';
+  });
+  html += '<div id="incFocus"></div>';
+  $('incBody').innerHTML = html;
+}
+function openPair(k) {
+  const c = buildConn();
+  const recs = c.pairs.get(k) || [];
+  const ij = k.split('|');
+  const host = $('incFocus');
+  if (!host) return;
+  host.innerHTML = '<div class="rec-group" style="margin-top:18px"><h3>' + esc(c.names[ij[0]]) + ' + ' + esc(c.names[ij[1]]) + ' (' + recs.length + ')</h3></div><div id="incFocusList"></div>';
+  incremental($('incFocusList'), recs, function (r) { return recRow(r); }, 25);
+  host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function coHtml(p) {
+  const c = buildConn();
+  const idx = c.names.indexOf(p.n);
+  if (idx < 0) return '';
+  const cnt = new Map();
+  p.recs.forEach(function (r) {
+    (c.perRec[r.id] || []).forEach(function (i) { if (i !== idx) cnt.set(i, (cnt.get(i) || 0) + 1); });
+  });
+  const top = [...cnt.entries()].sort(function (a, b) { return b[1] - a[1]; }).slice(0, 6);
+  if (!top.length) return '';
+  return '<div class="note" style="margin-bottom:4px">Compare spesso con</div><div class="th" style="margin:0 0 14px">' +
+    top.map(function (e) { return '<span class="chip click" data-person="' + esc(c.names[e[0]]) + '">' + esc(c.names[e[0]]) + ' (' + e[1] + ')</span>'; }).join('') + '</div>';
+}
+function dossierHtml(nome, senza) {
+  if (senza) return '';
+  const today = todayStr();
+  function belongs(rid) { const s = BYID[rid]; return !!(s && s.sog.indexOf(nome) >= 0); }
+  const fut = (CORE.deadlines || []).map(function (x, i) { return [x, i]; })
+    .filter(function (e) { return belongs(e[0].rec) && e[0].d >= today; })
+    .sort(function (a, b) { return a[0].d < b[0].d ? -1 : 1; }).slice(0, 3);
+  const imp = (CORE.imp || []).map(function (x, i) { return [x, i]; })
+    .filter(function (e) { return belongs(e[0].rec); }).slice(0, 3);
+  const eco = (CORE.eco || []).map(function (x, i) { return [x, i]; })
+    .filter(function (e) { return belongs(e[0].rec); })
+    .sort(function (a, b) { return a[0].d < b[0].d ? 1 : -1; }).slice(0, 3);
+  const pers = (typeof PERSONE !== 'undefined' ? PERSONE : []).filter(function (p) {
+    return p.recs.some(function (r) { return r.sog.indexOf(nome) >= 0; });
+  }).sort(function (a, b) { return b.recs.length - a.recs.length; }).slice(0, 6);
+  if (!fut.length && !imp.length && !eco.length && !pers.length) return '';
+  let h = '<div class="dossier">';
+  if (fut.length) h += '<div class="do-row"><span class="do-k">Scadenze aperte</span>' + fut.map(function (e) {
+    return '<button class="staterow" data-scad="' + e[1] + '"><span class="sr-date">' + (e[0].ca ? '≈ ' : '') + ddmm(e[0].d) + '</span><span class="sr-n">' + esc(e[0].t) + '</span></button>';
+  }).join('') + '</div>';
+  if (imp.length) h += '<div class="do-row"><span class="do-k">Impegni aperti</span>' + imp.map(function (e) {
+    return '<button class="staterow" data-imp="' + e[1] + '"><span class="sr-date">' + (e[0].who === 'io' ? 'io' : 'loro') + '</span><span class="sr-n">' + esc(e[0].t) + '</span></button>';
+  }).join('') + '</div>';
+  if (eco.length) h += '<div class="do-row"><span class="do-k">Numeri sul tavolo</span>' + eco.map(function (e) {
+    return '<button class="staterow" data-eco="' + e[1] + '"><span class="sr-date">' + ddmm(e[0].d) + '</span><span class="sr-n">' + esc(e[0].txt) + '</span></button>';
+  }).join('') + '</div>';
+  if (pers.length) h += '<div class="do-row"><span class="do-k">Persone</span><div class="th" style="margin-top:2px">' + pers.map(function (p) {
+    return '<span class="chip click" data-person="' + esc(p.n) + '">' + esc(p.n) + '</span>';
+  }).join('') + '</div></div>';
+  h += '</div>';
+  return h;
+}
 
 /* ==========================================================================
    16. VISTA 7 — MAPPA MENTALE
@@ -2576,6 +2888,8 @@ function renderAll() {
   renderStato();
   renderScadenze();
   renderNumeri();
+  renderImpegni();
+  renderIncroci();
   runSearch();
 }
 /* navigazione laterale */
@@ -2643,6 +2957,23 @@ document.addEventListener('click', (e) => {
   }
   const stseg = t.closest('[data-stato]');
   if (stseg) { statoMode = stseg.dataset.stato; renderStato(); return; }
+  const impb = t.closest('[data-imp]');
+  if (impb) {
+    const it = (CORE.imp || [])[parseInt(impb.dataset.imp, 10)];
+    if (it && BYID[it.rec]) openDetail(it.rec, it.q ? [it.q] : null);
+    return;
+  }
+  const incs = t.closest('[data-inc]');
+  if (incs) { incMode = incs.dataset.inc; renderIncroci(); return; }
+  const incd = t.closest('[data-incdim]');
+  if (incd) {
+    if (incMode === 'matrice') matDim = incd.dataset.incdim; else tlDim = incd.dataset.incdim;
+    renderIncroci(); return;
+  }
+  const mc = t.closest('[data-mcell]');
+  if (mc) { openMatCell(mc.dataset.mcell); return; }
+  const pairb = t.closest('[data-pair]');
+  if (pairb) { openPair(pairb.dataset.pair); return; }
   const q = t.closest('[data-q]');
   if (q) {
     e.stopPropagation();
