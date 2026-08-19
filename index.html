@@ -222,6 +222,22 @@ h1.view-h { font-size: 21px; margin: 0 0 3px 0; font-weight: 650; letter-spacing
 .card .c { color: var(--ink-2); font-size: 12.5px; margin-top: 3px; }
 .card .d { color: var(--ink-2); font-size: 12.5px; margin-top: 7px; }
 .card .x { margin-top: 8px; }
+.staterow {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font: inherit; color: inherit;
+}
+.staterow:hover { border-color: var(--accent); }
+.staterow.dim { opacity: .55; }
+.staterow .sr-date { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 12.5px; min-width: 88px; flex: none; }
+.staterow .sr-n { font-weight: 600; font-size: 14px; flex: 1 1 auto; min-width: 0; }
+.staterow .sr-sub { color: var(--ink-2); font-size: 12px; }
+.staterow .sr-meta { color: var(--ink-2); font-size: 12px; white-space: nowrap; }
+.badge { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px; flex: none; white-space: nowrap; }
+.b-vivo { background: rgba(31, 138, 61, .15); color: #22a04a; }
+.b-warm { background: rgba(214, 146, 22, .15); color: #c78312; }
+.b-dorm { background: rgba(191, 54, 40, .13); color: #d05646; }
+.eco-q { margin: -3px 2px 10px; color: var(--ink-2); font-size: 12.5px; font-style: italic; }
 
 .rec {
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
@@ -459,6 +475,10 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
       <button data-view="progetti"><span>Progetti</span><span class="n" id="navPrj"></span></button>
       <button data-view="temi"><span>Temi</span><span class="n" id="navTemi"></span></button>
       <button data-view="data"><span>Per data</span><span class="n" id="navData"></span></button>
+      <button data-view="persone"><span>Persone</span><span class="n" id="navPers"></span></button>
+      <button data-view="stato"><span>Stato</span></button>
+      <button data-view="scadenze"><span>Scadenze</span><span class="n" id="navScad"></span></button>
+      <button data-view="numeri"><span>Numeri</span></button>
       <button data-view="ricerca"><span>Ricerca</span></button>
       <button data-view="mappa"><span>Mappa</span></button>
       <button data-view="report"><span>Report</span><span class="n" id="navRep"></span></button>
@@ -588,9 +608,51 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
       </section>
 
       <!-- ---------- 6. Ricerca ---------- -->
+      <!-- ---------- Persone ---------- -->
+      <section id="view-persone" class="view hidden">
+        <div id="persIndex">
+          <h1 class="view-h">Persone</h1>
+          <div class="view-note">Le persone citate o presenti nei contenuti, ricavate da partecipanti ed entità. Ogni scheda mostra quanti contenuti riguardano quella persona e la data dell'ultimo contatto: un clic apre la storia completa della relazione.</div>
+          <div class="tools">
+            <label>Ordina per
+              <select id="persSort">
+                <option value="cnt">numero di contenuti</option>
+                <option value="rec">contatto più recente</option>
+                <option value="alf">ordine alfabetico</option>
+              </select>
+            </label>
+            <span id="persCount" style="color:var(--muted)"></span>
+          </div>
+          <div class="grid" id="persGrid"></div>
+        </div>
+        <div id="persView" class="hidden"></div>
+      </section>
+
+      <!-- ---------- Stato ---------- -->
+      <section id="view-stato" class="view hidden">
+        <h1 class="view-h">Stato</h1>
+        <div class="view-note">Il cruscotto dei dossier: temi e soggetti ordinati per ultima attività. <b>Vivo</b> = attività negli ultimi 21 giorni, <b>in raffreddamento</b> = tra 22 e 60, <b>dormiente</b> = oltre 60 giorni. Un clic apre il tema o il soggetto.</div>
+        <div class="tools"><div class="seg" id="statoSeg"></div></div>
+        <div id="statoList"></div>
+      </section>
+
+      <!-- ---------- Scadenze ---------- -->
+      <section id="view-scadenze" class="view hidden">
+        <h1 class="view-h">Scadenze</h1>
+        <div class="view-note">Le scadenze e gli appuntamenti citati nei contenuti, con la fonte: un clic apre il contenuto originale con il passaggio evidenziato in giallo. Le date con <b>≈</b> sono indicative.</div>
+        <div id="scadList"></div>
+      </section>
+
+      <!-- ---------- Numeri ---------- -->
+      <section id="view-numeri" class="view hidden">
+        <h1 class="view-h">Numeri</h1>
+        <div class="view-note">La memoria negoziale: cifre, percentuali e condizioni economiche citate nelle riunioni e negli accordi, raggruppate per dossier. Un clic apre la fonte con il passaggio evidenziato in giallo.</div>
+        <div id="ecoList"></div>
+      </section>
+
       <section id="view-ricerca" class="view hidden">
         <h1 class="view-h">Ricerca</h1>
-        <div class="view-note">La ricerca trova solo <b>parole intere</b>: cercando <i>sop</i> non compaiono i risultati di <i>soprattutto</i>. Maiuscole e accenti sono ignorati. Con più parole vengono mostrati i contenuti che le contengono tutte.</div>
+        <div class="view-note">La ricerca trova solo <b>parole intere</b>: cercando <i>sop</i> non compaiono i risultati di <i>soprattutto</i>. Maiuscole e accenti sono ignorati. Con più parole vengono mostrati i contenuti che le contengono tutte. Alcune famiglie di nomi sono unificate: cercando <i>SOP</i> si trovano anche i contenuti che dicono <i>SOAP</i>, cercando <i>Onward</i> anche quelli che dicono <i>NewCo</i>.</div>
         <div class="panel">
           <div class="tools">
             <input type="search" id="q" placeholder="Cerca una parola o un nome..." style="flex:1 1 300px" autocomplete="off" spellcheck="false">
@@ -1131,10 +1193,11 @@ function buildState() {
 /* ==========================================================================
    7. NAVIGAZIONE
    ========================================================================== */
-const VIEWS = ['home', 'soggetti', 'progetti', 'temi', 'data', 'ricerca', 'mappa', 'report'];
+const VIEWS = ['home', 'soggetti', 'progetti', 'temi', 'data', 'persone', 'stato', 'scadenze', 'numeri', 'ricerca', 'mappa', 'report'];
 const VIEW_TITLES = {
   home: 'Panoramica', soggetti: 'Soggetti', progetti: 'Progetti', temi: 'Temi',
-  data: 'Per data', ricerca: 'Ricerca', mappa: 'Mappa', report: 'Report'
+  data: 'Per data', persone: 'Persone', stato: 'Stato', scadenze: 'Scadenze', numeri: 'Numeri',
+  ricerca: 'Ricerca', mappa: 'Mappa', report: 'Report'
 };
 let CURRENT_VIEW = 'home';
 function show(view, keepScroll) {
@@ -1742,6 +1805,8 @@ function queryTerms(q) {
 function runSearch() {
   const raw = $('q').value.trim();
   const terms = queryTerms(raw);
+  const groups = terms.map(aliasGroup);
+  const flatTerms = [].concat.apply([], groups);
   const out = $('qResults'), cnt = $('qCount');
   if (!terms.length) {
     out.innerHTML = '';
@@ -1756,13 +1821,15 @@ function runSearch() {
     if (useFt) indexFullTextSync(e);
     let score = 0, ok = true;
     const where = new Set();
-    for (const t of terms) {
+    for (const g of groups) {
       let hit = false;
-      if (hasWord(e.tf, t)) { score += 8; where.add('titolo'); hit = true; }
-      if (hasWord(e.kwf, t)) { score += 5; where.add('parole chiave'); hit = true; }
-      if (hasWord(e.entf, t)) { score += 5; where.add('entità'); hit = true; }
-      if (hasWord(e.sf, t)) { score += 3; where.add('sintesi'); hit = true; }
-      if (useFt && e.ftf && hasWord(e.ftf, t)) { score += 1; where.add('testo integrale'); hit = true; }
+      for (const t of g) {
+        if (hasWord(e.tf, t)) { score += 8; where.add('titolo'); hit = true; }
+        if (hasWord(e.kwf, t)) { score += 5; where.add('parole chiave'); hit = true; }
+        if (hasWord(e.entf, t)) { score += 5; where.add('entità'); hit = true; }
+        if (hasWord(e.sf, t)) { score += 3; where.add('sintesi'); hit = true; }
+        if (useFt && e.ftf && hasWord(e.ftf, t)) { score += 1; where.add('testo integrale'); hit = true; }
+      }
       if (!hit) { ok = false; break; }
     }
     if (ok) res.push({ e: e, score: score, where: [...where] });
@@ -1775,11 +1842,11 @@ function runSearch() {
     : 'Nessun risultato per <b>' + esc(raw) + '</b> (ricerca per parole intere' + (useFt ? ', testi integrali inclusi' : ', prova a estendere ai testi integrali') + ').';
   incremental(out, res, (x) => {
     const e = x.e;
-    let sn = snippetAround(e.s, e.sf, terms, 80, 160);
-    if (!sn && e.kw) sn = snippetAround(e.kw, e.kwf, terms, 40, 90);
-    if (!sn && e.ent) sn = snippetAround(e.ent, e.entf, terms, 40, 90);
-    if (!sn && useFt && e.ft) sn = snippetAround(e.ft, e.ftf, terms, 90, 170);
-    if (!sn && e.t) sn = snippetAround(e.t, e.tf, terms, 40, 120);
+    let sn = snippetAround(e.s, e.sf, flatTerms, 80, 160);
+    if (!sn && e.kw) sn = snippetAround(e.kw, e.kwf, flatTerms, 40, 90);
+    if (!sn && e.ent) sn = snippetAround(e.ent, e.entf, flatTerms, 40, 90);
+    if (!sn && useFt && e.ft) sn = snippetAround(e.ft, e.ftf, flatTerms, 90, 170);
+    if (!sn && e.t) sn = snippetAround(e.t, e.tf, flatTerms, 40, 120);
     const tag = '<span class="chip">' + esc(x.where.join(' · ')) + '</span> ';
     return recRow(e.r, tag + (sn || ''), { hideTh: true });
   }, 20, 'Nessun risultato.');
@@ -1811,6 +1878,152 @@ async function extendToFullText() {
     msg.textContent = errText(e);
   }
 }
+
+/* ==========================================================================
+   15-bis. VISTE PERSONE / STATO / SCADENZE / NUMERI + ALIAS DI RICERCA
+   ========================================================================== */
+function aliasGroup(term) {
+  const gs = CORE && CORE.search_aliases || [];
+  for (const g of gs) { if (g.indexOf(term) >= 0) return g.slice(); }
+  return [term];
+}
+let PERSONE = [];
+function buildPersone() {
+  const map = {};
+  const base = (CORE.people || []).map(function (p, i) {
+    (p.a || []).concat([p.n]).forEach(function (al) { map[fold(al)] = i; });
+    return { n: p.n, note: p.note || '', recs: [], ths: new Map() };
+  });
+  RECORDS.forEach(function (r) {
+    const seen = new Set();
+    (r.part || []).concat(r.ent || []).forEach(function (x) {
+      const i = map[fold(String(x).trim())];
+      if (i != null && !seen.has(i)) {
+        seen.add(i);
+        base[i].recs.push(r);
+        r.th.forEach(function (t) { base[i].ths.set(t, (base[i].ths.get(t) || 0) + 1); });
+      }
+    });
+  });
+  PERSONE = base.filter(function (p) { return p.recs.length; });
+  PERSONE.forEach(function (p) { p.last = p.recs[0]._ts; });
+}
+function renderPersone() {
+  buildPersone();
+  const mode = $('persSort').value;
+  const list = PERSONE.slice();
+  if (mode === 'alf') list.sort(function (a, b) { return a.n.localeCompare(b.n, 'it'); });
+  else if (mode === 'rec') list.sort(function (a, b) { return b.last - a.last; });
+  else list.sort(function (a, b) { return b.recs.length - a.recs.length || a.n.localeCompare(b.n, 'it'); });
+  $('persCount').textContent = list.length + ' persone';
+  $('navPers').textContent = list.length;
+  $('persGrid').innerHTML = list.map(function (p) {
+    return '<button class="card" data-person="' + esc(p.n) + '">' +
+      '<div class="n">' + esc(p.n) + '</div>' +
+      '<div class="c">' + (p.note ? esc(p.note) + ' · ' : '') + p.recs.length + ' ' + plural(p.recs.length, 'contenuto', 'contenuti') +
+      ' · ultimo: ' + fmtDateShort.format(dayDate(p.recs[0])) + '</div>' +
+      '<div class="x">' + countsOf(p.recs) + '</div></button>';
+  }).join('');
+}
+function openPersona(nome) {
+  show('persone');
+  const p = PERSONE.find(function (x) { return x.n === nome; });
+  if (!p) return;
+  $('persIndex').classList.add('hidden');
+  const el = $('persView');
+  el.classList.remove('hidden');
+  const topTh = [...p.ths.entries()].sort(function (a, b) { return b[1] - a[1]; }).slice(0, 8)
+    .map(function (e) { return THBY[e[0]] ? '<span class="chip click" data-th="' + esc(e[0]) + '">' + esc(THBY[e[0]].nome) + ' (' + e[1] + ')</span>' : ''; }).join('');
+  el.innerHTML = '<button class="btn" data-back="pers">← Tutte le persone</button>' +
+    '<h1 class="view-h" style="margin-top:12px">' + esc(nome) + '</h1>' +
+    '<div class="view-note">' + (p.note ? esc(p.note) + ' · ' : '') + p.recs.length + ' ' + plural(p.recs.length, 'contenuto', 'contenuti') +
+    ', dal ' + fmtDateShort.format(dayDate(p.recs[p.recs.length - 1])) + ' al ' + fmtDateShort.format(dayDate(p.recs[0])) + '.</div>' +
+    (topTh ? '<div class="th" style="margin:0 0 14px">' + topTh + '</div>' : '') +
+    '<div id="persRecs"></div>';
+  incremental($('persRecs'), p.recs, function (r) { return recRow(r); }, 25);
+  window.scrollTo(0, 0);
+}
+function backToPersone() { $('persView').classList.add('hidden'); $('persIndex').classList.remove('hidden'); }
+
+let statoMode = 'temi';
+function statoBadge(days) {
+  if (days <= 21) return '<span class="badge b-vivo">vivo</span>';
+  if (days <= 60) return '<span class="badge b-warm">in raffreddamento</span>';
+  return '<span class="badge b-dorm">dormiente</span>';
+}
+function renderStato() {
+  $('statoSeg').innerHTML =
+    '<button type="button" class="' + (statoMode === 'temi' ? 'on' : '') + '" data-stato="temi">Temi</button>' +
+    '<button type="button" class="' + (statoMode === 'soggetti' ? 'on' : '') + '" data-stato="soggetti">Soggetti</button>';
+  const now = Date.now();
+  let items;
+  if (statoMode === 'temi') {
+    items = THEMES.map(function (t) {
+      return { nome: t.nome, sub: (MACROBY[t.macro] || {}).nome || '', attr: 'data-tema="' + esc(t.id) + '"', recs: TH_RECS[t.id] || [] };
+    });
+  } else {
+    items = SOGG.map(function (s) { return { nome: s.nome, sub: '', attr: 'data-sogcard="' + esc(s.nome) + '"', recs: s.recs }; });
+  }
+  items = items.filter(function (x) { return x.recs.length; });
+  items.forEach(function (x) {
+    x.last = x.recs[0]._ts;
+    x.days = Math.max(0, Math.floor((now - x.last) / 86400000));
+    x.m30 = x.recs.filter(function (r) { return now - r._ts < 30 * 86400000; }).length;
+  });
+  items.sort(function (a, b) { return a.days - b.days; });
+  function row(x) {
+    return '<button class="staterow" ' + x.attr + '>' + statoBadge(x.days) +
+      '<span class="sr-n">' + esc(x.nome) + (x.sub ? ' <span class="sr-sub">· ' + esc(x.sub) + '</span>' : '') + '</span>' +
+      '<span class="sr-meta">' + (x.days === 0 ? 'oggi' : x.days + ' gg fa') + ' · ' + x.m30 + ' negli ultimi 30 gg · ' + x.recs.length + ' tot</span></button>';
+  }
+  const vivi = items.filter(function (x) { return x.days <= 21; });
+  const warm = items.filter(function (x) { return x.days > 21 && x.days <= 60; });
+  const dorm = items.filter(function (x) { return x.days > 60; });
+  $('statoList').innerHTML =
+    '<div class="rec-group"><h3>Vivi (' + vivi.length + ')</h3></div>' + (vivi.map(row).join('') || '<div class="empty">Nessuno.</div>') +
+    '<div class="rec-group" style="margin-top:20px"><h3>In raffreddamento (' + warm.length + ')</h3></div>' + (warm.map(row).join('') || '<div class="empty">Nessuno.</div>') +
+    '<div class="rec-group" style="margin-top:20px"><h3>Dormienti (' + dorm.length + ')</h3></div>' + (dorm.map(row).join('') || '<div class="empty">Nessuno.</div>');
+}
+function renderScadenze() {
+  const all = (CORE.deadlines || []);
+  const idx = all.map(function (x, i) { return [x, i]; }).sort(function (a, b) { return a[0].d < b[0].d ? -1 : 1; });
+  const t = new Date();
+  const today = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+  const fut = idx.filter(function (e) { return e[0].d >= today; });
+  const past = idx.filter(function (e) { return e[0].d < today; }).reverse();
+  $('navScad').textContent = fut.length;
+  function row(e, dim) {
+    const x = e[0], dd = x.d.split('-');
+    const src = BYID[x.rec];
+    return '<button class="staterow' + (dim ? ' dim' : '') + '" data-scad="' + e[1] + '">' +
+      '<span class="sr-date">' + (x.ca ? '≈ ' : '') + dd[2] + '/' + dd[1] + '/' + dd[0] + '</span>' +
+      '<span class="sr-n">' + esc(x.t) + '</span>' +
+      (src ? '<span class="sr-sub">' + esc(String(src.t).slice(0, 46)) + '</span>' : '') + '</button>';
+  }
+  $('scadList').innerHTML =
+    '<div class="rec-group"><h3>Prossime (' + fut.length + ')</h3></div>' +
+    (fut.map(function (e) { return row(e, 0); }).join('') || '<div class="empty">Nessuna scadenza futura registrata.</div>') +
+    (past.length ? '<div class="rec-group" style="margin-top:20px"><h3>Passate (' + past.length + ')</h3></div>' + past.map(function (e) { return row(e, 1); }).join('') : '');
+}
+function renderNumeri() {
+  const eco = (CORE.eco || []);
+  const bys = new Map();
+  eco.forEach(function (x, i) { if (!bys.has(x.sog)) bys.set(x.sog, []); bys.get(x.sog).push([x, i]); });
+  let html = '';
+  [...bys.entries()].sort(function (a, b) { return a[0].localeCompare(b[0], 'it'); }).forEach(function (e) {
+    const arr = e[1].sort(function (a, b) { return a[0].d < b[0].d ? 1 : -1; });
+    html += '<div class="rec-group"' + (html ? ' style="margin-top:20px"' : '') + '><h3>' + esc(e[0]) + '</h3></div>' +
+      arr.map(function (p) {
+        const x = p[0], dd = x.d.split('-');
+        return '<button class="staterow" data-eco="' + p[1] + '">' +
+          '<span class="sr-date">' + dd[2] + '/' + dd[1] + '/' + dd[0] + '</span>' +
+          '<span class="sr-n">' + esc(x.txt) + '</span></button>' +
+          '<div class="eco-q">«' + esc(x.q) + '»</div>';
+      }).join('');
+  });
+  $('ecoList').innerHTML = html || '<div class="empty">Nessun dato economico registrato.</div>';
+}
+$('persSort').addEventListener('change', renderPersone);
 
 /* ==========================================================================
    16. VISTA 7 — MAPPA MENTALE
@@ -2359,6 +2572,10 @@ function renderAll() {
   initDataFilters();
   renderData();
   renderReports();
+  renderPersone();
+  renderStato();
+  renderScadenze();
+  renderNumeri();
   runSearch();
 }
 /* navigazione laterale */
@@ -2389,6 +2606,7 @@ document.addEventListener('click', (e) => {
     else if (k === 'temi') backToTemi();
     else if (k === 'macro') { const mid = back.dataset.mid; if (mid && MACROBY[mid]) openMacro(mid); else backToTemi(); }
     else if (k === 'rep') backToReports();
+    else if (k === 'pers') backToPersone();
     return;
   }
   const fonte = t.closest('[data-fonte]');
@@ -2409,6 +2627,22 @@ document.addEventListener('click', (e) => {
   if (macro) { openMacro(macro.dataset.macro); return; }
   const tema = t.closest('[data-tema]');
   if (tema) { openTema(tema.dataset.tema); return; }
+  const pers = t.closest('[data-person]');
+  if (pers) { openPersona(pers.dataset.person); return; }
+  const scad = t.closest('[data-scad]');
+  if (scad) {
+    const it = (CORE.deadlines || [])[parseInt(scad.dataset.scad, 10)];
+    if (it && BYID[it.rec]) openDetail(it.rec, it.q ? [it.q] : null);
+    return;
+  }
+  const ecob = t.closest('[data-eco]');
+  if (ecob) {
+    const it = (CORE.eco || [])[parseInt(ecob.dataset.eco, 10)];
+    if (it && BYID[it.rec]) openDetail(it.rec, it.q ? [it.q] : null);
+    return;
+  }
+  const stseg = t.closest('[data-stato]');
+  if (stseg) { statoMode = stseg.dataset.stato; renderStato(); return; }
   const q = t.closest('[data-q]');
   if (q) {
     e.stopPropagation();
