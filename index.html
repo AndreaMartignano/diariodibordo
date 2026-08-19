@@ -514,6 +514,7 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
       <button data-view="incroci"><span>Incroci</span></button>
       <button data-view="ricerca"><span>Ricerca</span></button>
       <button data-view="mappa"><span>Mappa</span></button>
+      <button data-view="digest"><span>Digest</span><span class="n" id="navDig"></span></button>
       <button data-view="report"><span>Report</span><span class="n" id="navRep"></span></button>
     </nav>
     <div class="side-foot">
@@ -736,6 +737,16 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
           </div>
           <div id="mapWrap"><svg id="mindmap"></svg><div id="mapTip" class="tipbox"></div></div>
         </div>
+      </section>
+
+      <!-- ---------- Digest ---------- -->
+      <section id="view-digest" class="view hidden">
+        <div id="digIndex">
+          <h1 class="view-h">Digest</h1>
+          <div class="view-note">Il riepilogo settimanale generato ogni lunedì alle 9:00: la settimana in archivio, i temi prioritari, le scadenze e le cose da fare nella settimana successiva. Ogni passaggio cita le sue fonti: un clic apre il contenuto originale con il brano evidenziato in giallo.</div>
+          <div id="digList"></div>
+        </div>
+        <div id="digView" class="hidden"></div>
       </section>
 
       <!-- ---------- 8. Report ---------- -->
@@ -1241,11 +1252,11 @@ function buildState() {
 /* ==========================================================================
    7. NAVIGAZIONE
    ========================================================================== */
-const VIEWS = ['home', 'soggetti', 'progetti', 'temi', 'data', 'persone', 'stato', 'scadenze', 'impegni', 'numeri', 'incroci', 'ricerca', 'mappa', 'report'];
+const VIEWS = ['home', 'soggetti', 'progetti', 'temi', 'data', 'persone', 'stato', 'scadenze', 'impegni', 'numeri', 'incroci', 'ricerca', 'mappa', 'digest', 'report'];
 const VIEW_TITLES = {
   home: 'Panoramica', soggetti: 'Soggetti', progetti: 'Progetti', temi: 'Temi',
   data: 'Per data', persone: 'Persone', stato: 'Stato', scadenze: 'Scadenze', numeri: 'Numeri',
-  impegni: 'Impegni', incroci: 'Incroci',
+  impegni: 'Impegni', incroci: 'Incroci', digest: 'Digest',
   ricerca: 'Ricerca', mappa: 'Mappa', report: 'Report'
 };
 let CURRENT_VIEW = 'home';
@@ -2644,15 +2655,22 @@ function resolveRec(id) {
   if (BYID['c_' + id]) return BYID['c_' + id];
   return null;
 }
+function isDigest(rep) { return String((rep && rep.id) || '').indexOf('digest-') === 0; }
+function repCard(rep, i) {
+  const nf = (rep.sezioni || []).reduce((a, s) => a + (s.paragrafi || []).reduce((b, p) => b + (p.fonti || []).length, 0), 0);
+  return '<article class="rec" data-rep="' + i + '" tabindex="0">' +
+    '<div class="hd"><div class="t">' + esc(rep.titolo || 'Report') + '</div></div>' +
+    '<div class="m"><span>' + esc(rep.data || '') + '</span><span>' + esc(rep.generato_da || '') + '</span>' +
+    '<span>' + (rep.sezioni || []).length + ' sezioni</span><span>' + nf + ' fonti citate</span></div>' +
+    '<div class="snip">' + esc(rep.domanda || '') + '</div></article>';
+}
 function renderReports() {
-  $('repList').innerHTML = REPORTS.length ? REPORTS.map((rep, i) => {
-    const nf = (rep.sezioni || []).reduce((a, s) => a + (s.paragrafi || []).reduce((b, p) => b + (p.fonti || []).length, 0), 0);
-    return '<article class="rec" data-rep="' + i + '" tabindex="0">' +
-      '<div class="hd"><div class="t">' + esc(rep.titolo || 'Report') + '</div></div>' +
-      '<div class="m"><span>' + esc(rep.data || '') + '</span><span>' + esc(rep.generato_da || '') + '</span>' +
-      '<span>' + (rep.sezioni || []).length + ' sezioni</span><span>' + nf + ' fonti citate</span></div>' +
-      '<div class="snip">' + esc(rep.domanda || '') + '</div></article>';
-  }).join('') : '<div class="empty">Nessun report presente nell\'archivio.</div>';
+  const rs = REPORTS.map((rep, i) => [rep, i]).filter((e) => !isDigest(e[0]));
+  $('repList').innerHTML = rs.length ? rs.map((e) => repCard(e[0], e[1])).join('') : '<div class="empty">Nessun report presente nell\'archivio.</div>';
+  const ds = REPORTS.map((rep, i) => [rep, i]).filter((e) => isDigest(e[0]))
+    .sort((a, b) => String(a[0].data || '') < String(b[0].data || '') ? 1 : -1);
+  $('navDig').textContent = ds.length || '';
+  $('digList').innerHTML = ds.length ? ds.map((e) => repCard(e[0], e[1])).join('') : '<div class="empty">Nessun digest ancora: il primo arriva lunedì alle 9:00.</div>';
 }
 function fontiChips(fonti) {
   return (fonti || []).map((f) => {
@@ -2683,11 +2701,12 @@ function openReport(i) {
   const rep = REPORTS[i];
   if (!rep) return;
   REPORT_FONTI = [];
-  show('report');
-  $('repIndex').classList.add('hidden');
-  const el = $('repView');
+  const dig = isDigest(rep);
+  show(dig ? 'digest' : 'report');
+  $(dig ? 'digIndex' : 'repIndex').classList.add('hidden');
+  const el = $(dig ? 'digView' : 'repView');
   el.classList.remove('hidden');
-  let html = '<button class="backlink" data-back="rep">&#8592; Tutti i report</button>' +
+  let html = '<button class="backlink" data-back="' + (dig ? 'dig' : 'rep') + '">&#8592; ' + (dig ? 'Tutti i digest' : 'Tutti i report') + '</button>' +
     '<div class="panel"><h2>' + esc(rep.titolo || 'Report') + '</h2>' +
     '<div class="note">Domanda: ' + esc(rep.domanda || '') + ' — ' + esc(rep.data || '') + ' — ' + esc(rep.generato_da || '') + '</div>' +
     '<div class="tools" style="margin-bottom:0"><button class="btn" data-repcopy="' + i + '">Copia il testo</button>' +
@@ -2711,6 +2730,11 @@ function openReport(i) {
 function backToReports() {
   $('repView').classList.add('hidden');
   $('repIndex').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+function backToDigest() {
+  $('digView').classList.add('hidden');
+  $('digIndex').classList.remove('hidden');
   window.scrollTo(0, 0);
 }
 
@@ -2874,7 +2898,7 @@ function renderAll() {
   $('navPrj').textContent = PROGETTI.length;
   $('navTemi').textContent = THEMES.length;
   $('navData').textContent = RECORDS.length;
-  $('navRep').textContent = REPORTS.length;
+  $('navRep').textContent = REPORTS.filter((r) => !isDigest(r)).length;
   $('sideCounts').innerHTML = countsHtml(countBySrc(RECORDS));
   $('sideRange').textContent = periodoLabel();
   renderHome();
@@ -2920,6 +2944,7 @@ document.addEventListener('click', (e) => {
     else if (k === 'temi') backToTemi();
     else if (k === 'macro') { const mid = back.dataset.mid; if (mid && MACROBY[mid]) openMacro(mid); else backToTemi(); }
     else if (k === 'rep') backToReports();
+    else if (k === 'dig') backToDigest();
     else if (k === 'pers') backToPersone();
     return;
   }
