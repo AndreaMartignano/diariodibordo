@@ -38,7 +38,8 @@
     "../tx-28.bin",
     "../tx-29.bin",
     "../tx-30.bin",
-    "../tx-31.bin"
+    "../tx-31.bin",
+    "../tx-32.bin"
   ],
-  "n_chunks": 32
+  "n_chunks": 33
 }
