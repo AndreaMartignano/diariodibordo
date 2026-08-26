@@ -602,6 +602,9 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
             <span id="prjCount" style="color:var(--muted)"></span>
           </div>
           <div class="grid wide" id="prjGrid"></div>
+          <h1 class="view-h" style="margin-top:38px">Cartelle Plaud</h1>
+          <div class="view-note">Le cartelle dell'app Plaud in cui sono organizzate le registrazioni: ogni cartella corrisponde a un soggetto dell'archivio e la sua scheda si apre nella vista Soggetti.</div>
+          <div class="grid wide" id="foldGrid"></div>
         </div>
         <div id="prjDetail" class="hidden"></div>
       </section>
@@ -1573,6 +1576,23 @@ function renderProgetti() {
       (descr ? '<div class="d">' + esc(descr) + '</div>' : '') +
       '</button>';
   }).join('') || '<div class="empty">Nessun progetto.</div>';
+  const folds = {};
+  RECORDS.forEach((r) => {
+    if (r.src !== 'plaud' || !r.fold || r.fold === 'Non archiviate') return;
+    (folds[r.fold] = folds[r.fold] || []).push(r);
+  });
+  const fnames = Object.keys(folds).sort((a, b) => folds[b].length - folds[a].length || a.localeCompare(b, 'it'));
+  $('foldGrid').innerHTML = fnames.map((f) => {
+    const rs = folds[f];
+    const sog = rs.map((r) => r.sog && r.sog[0]).find(Boolean) || f;
+    const last = rs.reduce((m, r) => (r.d > m ? r.d : m), '');
+    return '<button class="card" data-sogcard="' + esc(sog) + '">' +
+      '<div class="hd" style="margin-bottom:5px"><span class="src src-plaud">Plaud<span class="sub">Cartella</span></span></div>' +
+      '<div class="n">' + esc(f) + '</div>' +
+      '<div class="c">' + rs.length + ' ' + plural(rs.length, 'registrazione', 'registrazioni') +
+      (last ? ' · ultima ' + fmtDateShort.format(new Date(last + 'T12:00:00')) : '') + '</div>' +
+      '</button>';
+  }).join('') || '<div class="empty">Nessuna cartella.</div>';
 }
 let PRJ_SEQ = 0;
 function openProgetto(nome) {
