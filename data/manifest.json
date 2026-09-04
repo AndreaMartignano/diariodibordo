@@ -46,7 +46,8 @@
   "../tx-36.bin",
   "../tx-37.bin",
   "../tx-38.bin",
-  "../tx-39.bin"
+  "../tx-39.bin",
+  "../tx-40.bin"
  ],
- "n_chunks": 40
+ "n_chunks": 41
 }
