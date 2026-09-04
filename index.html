@@ -384,6 +384,23 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
 #uniLeg span { cursor: pointer; }
 #uniLeg span:hover { color: var(--ink-1); }
 #uniTema, #uniFonte { max-width: 62vw; }
+/* ---------- relazioni ---------- */
+#relWrap { position: relative; margin-top: 4px; }
+#relSvg { width: 100%; display: block; background: var(--surface); border-radius: 8px; height: auto; }
+.rel-edge { stroke: var(--baseline); stroke-linecap: round; }
+.rel-edge.cross { stroke: var(--ink-2); opacity: 0.85; }
+.rel-hit { stroke: transparent; stroke-width: 10; cursor: pointer; }
+.rel-hit:hover { stroke: var(--accent); stroke-opacity: 0.28; }
+.rel-node { cursor: pointer; stroke: var(--surface); stroke-width: 1.5; }
+.rel-node:hover { stroke: var(--ink-1); stroke-width: 2; }
+.rel-lab { font-size: 10.5px; fill: var(--ink-2); pointer-events: none; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+.rel-bread { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
+.rel-bread .chip.on { background: var(--ink-1); border-color: var(--ink-1); color: var(--page); }
+.rel-arrow { color: var(--muted); }
+.rel-via { color: var(--muted); font-size: 11.5px; }
+.rel-jumps { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 2px; }
+.rel-jl { color: var(--muted); font-size: 11.5px; margin-right: 2px; }
+.rel-jump { border-style: dashed; }
 @media (max-width: 620px) {
   #uniLeg { font-size: 11.5px; gap: 4px 10px; }
   .uni-tab td { width: 30px; }
@@ -544,6 +561,7 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
       <button data-view="impegni"><span>Impegni</span><span class="n" id="navImp"></span></button>
       <button data-view="numeri"><span>Numeri</span></button>
       <button data-view="incroci"><span>Incroci</span></button>
+      <button data-view="relazioni"><span>Relazioni</span></button>
       <button data-view="ricerca"><span>Ricerca</span></button>
       <button data-view="mappa"><span>Mappa</span></button>
       <button data-view="digest"><span>Digest</span><span class="n" id="navDig"></span></button>
@@ -732,6 +750,23 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
         <div class="view-note" id="incNote"></div>
         <div class="tools"><div class="seg" id="incSeg"></div><span id="incCtl" style="display:inline-flex"></span></div>
         <div id="incBody"></div>
+      </section>
+
+      <section id="view-relazioni" class="view hidden">
+        <h1 class="view-h">Relazioni</h1>
+        <div class="view-note">Non quanto e quando, ma che cosa tiene insieme che cosa. La rete disegna i legami reali fra i temi (o fra i dossier): i grappoli sono le logiche, i fili scuri fra grappoli diversi sono le cerniere. Le cerniere le mette in classifica, con i contenuti che le producono. I percorsi servono a camminare: si parte da un dossier o da un tema e ci si sposta di contenuto in contenuto, cambiando fronte quando il legame esiste davvero.</div>
+        <div class="panel">
+          <div class="tools">
+            <div class="seg" id="relModes">
+              <button data-rmode="rete">La rete</button>
+              <button data-rmode="cerniere">Le cerniere</button>
+              <button data-rmode="percorsi">I percorsi</button>
+            </div>
+            <span id="relCtl" style="display:inline-flex;gap:10px;flex-wrap:wrap"></span>
+          </div>
+          <div id="relWrap"></div>
+        </div>
+        <div id="relSel"></div>
       </section>
 
       <section id="view-ricerca" class="view hidden">
@@ -1301,11 +1336,11 @@ function buildState() {
 /* ==========================================================================
    7. NAVIGAZIONE
    ========================================================================== */
-const VIEWS = ['home', 'soggetti', 'progetti', 'temi', 'data', 'persone', 'stato', 'scadenze', 'impegni', 'numeri', 'incroci', 'ricerca', 'mappa', 'digest', 'report'];
+const VIEWS = ['home', 'soggetti', 'progetti', 'temi', 'data', 'persone', 'stato', 'scadenze', 'impegni', 'numeri', 'incroci', 'relazioni', 'ricerca', 'mappa', 'digest', 'report'];
 const VIEW_TITLES = {
   home: 'Panoramica', soggetti: 'Soggetti', progetti: 'Progetti', temi: 'Temi',
   data: 'Per data', persone: 'Persone', stato: 'Stato', scadenze: 'Scadenze', numeri: 'Numeri',
-  impegni: 'Impegni', incroci: 'Incroci', digest: 'Digest',
+  impegni: 'Impegni', incroci: 'Incroci', relazioni: 'Relazioni', digest: 'Digest',
   ricerca: 'Ricerca', mappa: 'Mappa', report: 'Report'
 };
 let CURRENT_VIEW = 'home';
@@ -1317,6 +1352,7 @@ function show(view, keepScroll) {
   $('topTitle').textContent = VIEW_TITLES[view] || 'Archivio';
   closeSidebar();
   if (view === 'mappa') initMap();
+  if (view === 'relazioni') initRel();
   if (view === 'ricerca') setTimeout(() => { if (window.innerWidth > 900) $('q').focus(); }, 40);
   if (!keepScroll) window.scrollTo(0, 0);
 }
@@ -2700,6 +2736,349 @@ function drawFiume(rs, mesi) {
 }
 function bindUniTip() {
   const wrap = $('uniWrap'), tip = $('uniTip');
+  if (!tip) return;
+  wrap.onmousemove = (e) => {
+    const el = e.target.closest ? e.target.closest('[data-utip]') : null;
+    if (!el) { tip.style.display = 'none'; return; }
+    tip.innerHTML = el.dataset.utip;
+    tip.style.display = 'block';
+    const b = wrap.getBoundingClientRect();
+    let x = e.clientX - b.left + 14, y = e.clientY - b.top + 14;
+    if (x + tip.offsetWidth > b.width) x = Math.max(0, b.width - tip.offsetWidth - 4);
+    tip.style.left = x + 'px';
+    tip.style.top = y + 'px';
+  };
+  wrap.onmouseleave = () => { tip.style.display = 'none'; };
+}
+
+/* ==========================================================================
+   16bis. VISTA — RELAZIONI: rete, cerniere, percorsi
+   ========================================================================== */
+let relInited = false;
+const REL = { mode: 'rete', nodi: 'temi', soglia: 2, path: [] };
+let REL_G = null, REL_KEY = '';
+
+/* ---------- grafo ---------- */
+function relGraph(kind) {
+  if (REL_G && REL_KEY === kind) return REL_G;
+  const nodes = [], idx = {}, em = new Map();
+  if (kind === 'temi') {
+    THEMES.forEach((t) => {
+      const n = (TH_RECS[t.id] || []).length;
+      if (!n) return;
+      idx[t.id] = nodes.length;
+      nodes.push({ id: t.id, nome: t.nome, macro: t.macro, n: n, via: [], attr: 'data-tema="' + esc(t.id) + '"' });
+    });
+    RECORDS.forEach((r) => {
+      const th = [...new Set(r.th || [])].filter((t) => idx[t] !== undefined).sort();
+      for (let a = 0; a < th.length; a++) for (let b = a + 1; b < th.length; b++) {
+        const k = idx[th[a]] + '|' + idx[th[b]];
+        if (!em.has(k)) em.set(k, { a: idx[th[a]], b: idx[th[b]], w: 0, recs: [], via: [] });
+        const e = em.get(k); e.w++; e.recs.push(r);
+      }
+    });
+  } else {
+    const sth = {};
+    RECORDS.forEach((r) => (r.sog || []).forEach((s) => {
+      if (!sth[s]) sth[s] = {};
+      (r.th || []).forEach((t) => { sth[s][t] = (sth[s][t] || 0) + 1; });
+    }));
+    SOGG.forEach((s) => {
+      const ms = {};
+      s.recs.forEach((r) => (r.th || []).forEach((t) => { const m = (THBY[t] || {}).macro; if (m) ms[m] = (ms[m] || 0) + 1; }));
+      const top = Object.keys(ms).sort((a, b) => ms[b] - ms[a])[0] || null;
+      idx[s.nome] = nodes.length;
+      nodes.push({ id: s.nome, nome: s.nome, macro: top, n: s.recs.length, attr: 'data-sogcard="' + esc(s.nome) + '"' });
+    });
+    for (let i = 0; i < SOGG.length; i++) for (let j = i + 1; j < SOGG.length; j++) {
+      const A = sth[SOGG[i].nome] || {}, B = sth[SOGG[j].nome] || {};
+      const via = Object.keys(A).filter((t) => B[t]);
+      if (!via.length) continue;
+      via.sort((a, b) => Math.min(A[b], B[b]) - Math.min(A[a], B[a]));
+      const w = via.reduce((a, t) => a + Math.min(A[t], B[t]), 0);
+      const set = new Set(via);
+      const recs = [...new Set(SOGG[i].recs.concat(SOGG[j].recs))].filter((r) => (r.th || []).some((t) => set.has(t)));
+      em.set(i + '|' + j, { a: i, b: j, w: w, recs: recs, via: via });
+    }
+  }
+  const edges = [...em.values()];
+  edges.forEach((e) => { e.cross = nodes[e.a].macro !== nodes[e.b].macro; });
+  nodes.forEach((nd) => { nd.deg = 0; nd.cross = 0; });
+  edges.forEach((e) => {
+    nodes[e.a].deg++; nodes[e.b].deg++;
+    if (e.cross) { nodes[e.a].cross += e.w; nodes[e.b].cross += e.w; }
+  });
+  REL_G = { nodes: nodes, edges: edges };
+  REL_KEY = kind;
+  return REL_G;
+}
+/* layout deterministico: Fruchterman-Reingold per componente, poi impacchettamento */
+function relFR(sub, se, W, H) {
+  const n = sub.length;
+  if (n === 1) { sub[0].x = W / 2; sub[0].y = H / 2; return; }
+  sub.forEach((nd, i) => {
+    const a = 2.399963 * i, rr = Math.sqrt((i + 0.5) / n);
+    nd.x = W / 2 + (W * 0.42) * rr * Math.cos(a);
+    nd.y = H / 2 + (H * 0.42) * rr * Math.sin(a);
+  });
+  const k = Math.sqrt((W * H) / n) * 1.02;
+  let t = W / 6;
+  for (let it = 0; it < 300; it++) {
+    for (let i = 0; i < n; i++) { sub[i].vx = 0; sub[i].vy = 0; }
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+      let dx = sub[i].x - sub[j].x, dy = sub[i].y - sub[j].y;
+      let d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 0.8) { d = 0.8; dx = ((i * 7 + j) % 5) - 2 || 1; dy = ((i * 3 + j) % 5) - 2 || 1; }
+      const f = (k * k) / d;
+      sub[i].vx += dx / d * f; sub[i].vy += dy / d * f;
+      sub[j].vx -= dx / d * f; sub[j].vy -= dy / d * f;
+    }
+    se.forEach((e) => {
+      const A = sub[e.a], B = sub[e.b];
+      let dx = B.x - A.x, dy = B.y - A.y;
+      const d = Math.sqrt(dx * dx + dy * dy) || 0.8;
+      const f = (d * d) / k;
+      A.vx += dx / d * f; A.vy += dy / d * f;
+      B.vx -= dx / d * f; B.vy -= dy / d * f;
+    });
+    for (let i = 0; i < n; i++) {
+      const nd = sub[i];
+      const d = Math.sqrt(nd.vx * nd.vx + nd.vy * nd.vy) || 1;
+      const sc = Math.min(d, t) / d;
+      nd.x += nd.vx * sc; nd.y += nd.vy * sc;
+    }
+    t = Math.max(0.5, t * 0.972);
+  }
+}
+function relFit(list, x0, y0, w, h, pad) {
+  let ax = Infinity, bx = -Infinity, ay = Infinity, by = -Infinity;
+  list.forEach((nd) => { ax = Math.min(ax, nd.x); bx = Math.max(bx, nd.x); ay = Math.min(ay, nd.y); by = Math.max(by, nd.y); });
+  const dw = Math.max(1, bx - ax), dh = Math.max(1, by - ay);
+  const sc = Math.min((w - 2 * pad) / dw, (h - 2 * pad) / dh);
+  const ox = x0 + (w - dw * sc) / 2, oy = y0 + (h - dh * sc) / 2;
+  list.forEach((nd) => { nd.x = ox + (nd.x - ax) * sc; nd.y = oy + (nd.y - ay) * sc; });
+}
+function relLayout(nodes, edges, W, H) {
+  const n = nodes.length;
+  if (!n) return;
+  const adj = nodes.map(() => []);
+  edges.forEach((e) => { adj[e.a].push(e.b); adj[e.b].push(e.a); });
+  const comp = new Array(n).fill(-1);
+  let nc = 0;
+  for (let i = 0; i < n; i++) {
+    if (comp[i] >= 0) continue;
+    const st = [i]; comp[i] = nc;
+    while (st.length) { const v = st.pop(); adj[v].forEach((u) => { if (comp[u] < 0) { comp[u] = nc; st.push(u); } }); }
+    nc++;
+  }
+  const groups = [];
+  for (let c = 0; c < nc; c++) {
+    const ids = [];
+    for (let i = 0; i < n; i++) if (comp[i] === c) ids.push(i);
+    const map = {}; ids.forEach((id, k) => { map[id] = k; });
+    const sub = ids.map((id) => nodes[id]);
+    const se = edges.filter((e) => comp[e.a] === c).map((e) => ({ a: map[e.a], b: map[e.b], w: e.w }));
+    groups.push({ sub: sub, se: se });
+  }
+  groups.sort((a, b) => b.sub.length - a.sub.length);
+  const big = groups[0];
+  const minori = groups.slice(1);
+  const colW = minori.length ? W * 0.19 : 0;
+  relFR(big.sub, big.se, W - colW, H);
+  relFit(big.sub, 0, 0, W - colW, H, 60);
+  if (minori.length) {
+    const rowH = H / minori.length;
+    minori.forEach((g, i) => {
+      relFR(g.sub, g.se, colW, rowH);
+      relFit(g.sub, W - colW, i * rowH, colW, rowH, Math.min(34, rowH / 3));
+    });
+  }
+}
+function initRel() {
+  if (!relInited) {
+    relInited = true;
+    $('view-relazioni').addEventListener('click', (e) => {
+      const m = e.target.closest('[data-rmode]');
+      if (m) { REL.mode = m.dataset.rmode; $('relSel').innerHTML = ''; drawRel(); return; }
+      const nd = e.target.closest('[data-rnodi]');
+      if (nd) { REL.nodi = nd.dataset.rnodi; REL_KEY = ''; $('relSel').innerHTML = ''; drawRel(); return; }
+      const so = e.target.closest('[data-rsoglia]');
+      if (so) { REL.soglia = parseInt(so.dataset.rsoglia, 10); drawRel(); return; }
+      const ed = e.target.closest('[data-redge]');
+      if (ed) { relEdge(ed.dataset.redge, ed.dataset.rkind || REL.nodi); return; }
+      const st = e.target.closest('[data-rstart]');
+      if (st) { REL.path = [JSON.parse(st.dataset.rstart)]; drawRel(); return; }
+      const jp = e.target.closest('[data-rjump]');
+      if (jp) { REL.path.push(JSON.parse(jp.dataset.rjump)); drawRel(); return; }
+      const bc = e.target.closest('[data-rback]');
+      if (bc) { REL.path = REL.path.slice(0, parseInt(bc.dataset.rback, 10) + 1); drawRel(); return; }
+      if (e.target.closest('#relReset')) { REL.path = []; $('relSel').innerHTML = ''; drawRel(); return; }
+    });
+  }
+  drawRel();
+}
+function drawRel() {
+  document.querySelectorAll('#relModes button').forEach((b) => b.classList.toggle('on', b.dataset.rmode === REL.mode));
+  $('relCtl').innerHTML = REL.mode === 'rete'
+    ? '<div class="seg"><button data-rnodi="temi" class="' + (REL.nodi === 'temi' ? 'on' : '') + '">Nodi: temi</button>' +
+      '<button data-rnodi="soggetti" class="' + (REL.nodi === 'soggetti' ? 'on' : '') + '">Nodi: dossier</button></div>' +
+      '<div class="seg"><button data-rsoglia="2" class="' + (REL.soglia === 2 ? 'on' : '') + '">Legami solidi</button>' +
+      '<button data-rsoglia="1" class="' + (REL.soglia === 1 ? 'on' : '') + '">Tutti i legami</button></div>'
+    : (REL.mode === 'percorsi' && REL.path.length ? '<button class="btn" id="relReset">Ricomincia il percorso</button>' : '');
+  if (REL.mode === 'rete') drawRete();
+  else if (REL.mode === 'cerniere') drawCerniere();
+  else drawPercorsi();
+}
+/* ---------- 1. la rete ---------- */
+function drawRete() {
+  const g = relGraph(REL.nodi);
+  const soglia = REL.nodi === 'soggetti' ? REL.soglia * 2 : REL.soglia;
+  const edges = g.edges.filter((e) => e.w >= soglia);
+  const used = new Set();
+  edges.forEach((e) => { used.add(e.a); used.add(e.b); });
+  const nodes = g.nodes.map((nd, i) => Object.assign({}, nd, { i: i })).filter((nd) => used.has(nd.i));
+  const remap = {}; nodes.forEach((nd, k) => { remap[nd.i] = k; });
+  const eds = edges.map((e) => ({ a: remap[e.a], b: remap[e.b], w: e.w, cross: e.cross, key: e.a + '|' + e.b }));
+  if (!nodes.length) { $('relWrap').innerHTML = '<div class="empty">Nessun legame a questa soglia.</div>'; return; }
+  const W = 1000, H = 700;
+  relLayout(nodes, eds, W, H);
+  const maxW = Math.max(1, ...eds.map((e) => e.w));
+  let s = '';
+  eds.forEach((e) => {
+    const A = nodes[e.a], B = nodes[e.b];
+    s += '<line class="rel-edge' + (e.cross ? ' cross' : '') + '" x1="' + A.x.toFixed(1) + '" y1="' + A.y.toFixed(1) + '" x2="' + B.x.toFixed(1) + '" y2="' + B.y.toFixed(1) +
+      '" stroke-width="' + (0.7 + 3.4 * e.w / maxW).toFixed(2) + '"/>';
+  });
+  eds.forEach((e) => {
+    const A = nodes[e.a], B = nodes[e.b];
+    const tip = esc(esc(A.nome) + ' + ' + esc(B.nome) + '<br>' + e.w + ' ' + plural(e.w, 'contenuto in comune', 'contenuti in comune') + (e.cross ? '<br><b>collega due filoni diversi</b>' : ''));
+    s += '<line class="rel-hit" data-redge="' + esc(e.key) + '" data-utip="' + tip + '" x1="' + A.x.toFixed(1) + '" y1="' + A.y.toFixed(1) + '" x2="' + B.x.toFixed(1) + '" y2="' + B.y.toFixed(1) + '"/>';
+  });
+  nodes.forEach((nd) => {
+    nd.r = 5 + Math.sqrt(nd.n) * 1.7;
+    const tip = esc(esc(nd.nome) + '<br>' + nd.n + ' ' + plural(nd.n, 'contenuto', 'contenuti') + ', ' + nd.deg + ' ' + plural(nd.deg, 'legame', 'legami') + (nd.cross ? '<br>' + nd.cross + ' fuori dal proprio filone' : ''));
+    s += '<circle class="rel-node" ' + nd.attr + ' data-utip="' + tip + '" cx="' + nd.x.toFixed(1) + '" cy="' + nd.y.toFixed(1) + '" r="' + nd.r.toFixed(1) + '" fill="' + macroColor(nd.macro) + '"/>';
+  });
+  const box = [];
+  const libero = (x, y, w) => {
+    const b = { x: x - w / 2, y: y - 9, w: w, h: 13 };
+    if (b.x < 2 || b.x + b.w > W - 2 || b.y < 0 || b.y + b.h > H) return null;
+    for (let i = 0; i < box.length; i++) {
+      const p = box[i];
+      if (b.x < p.x + p.w && b.x + b.w > p.x && b.y < p.y + p.h && b.y + b.h > p.y) return null;
+    }
+    box.push(b);
+    return true;
+  };
+  nodes.slice().sort((a, b) => (b.deg + b.n / 3) - (a.deg + a.n / 3)).forEach((nd) => {
+    const txt = trunc(nd.nome.split(':')[0], 26);
+    const w = txt.length * 5.3 + 4;
+    const cand = [[0, nd.r + 11], [0, -(nd.r + 5)], [w / 2 + nd.r + 7, 4], [-(w / 2 + nd.r + 7), 4]];
+    for (let c = 0; c < cand.length; c++) {
+      const x = nd.x + cand[c][0], y = nd.y + cand[c][1];
+      if (libero(x, y, w)) {
+        s += '<text class="rel-lab" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="middle">' + esc(txt) + '</text>';
+        break;
+      }
+    }
+  });
+  $('relWrap').innerHTML = '<div class="uni-scroll"><svg id="relSvg" viewBox="0 0 ' + W + ' ' + H + '" style="min-width:820px;aspect-ratio:' + W + '/' + H + '"></svg></div>' +
+    '<div class="note">Ogni pallino è un ' + (REL.nodi === 'temi' ? 'tema' : 'dossier') + ', grande quanto i contenuti che contiene; ogni filo è un legame reale, spesso quanto i contenuti che lo producono. I fili scuri collegano macro-filoni diversi: quelle sono le cerniere. Clic su un filo per leggere i contenuti che lo creano, clic su un pallino per aprire la scheda.</div>' +
+    '<div id="uniTip" class="tipbox"></div>';
+  $('relSvg').innerHTML = s;
+  relTip();
+}
+function relEdge(key, kind) {
+  const g = relGraph(kind);
+  const e = g.edges.find((x) => x.a + '|' + x.b === key);
+  if (!e) return;
+  const A = g.nodes[e.a], B = g.nodes[e.b];
+  const via = e.via && e.via.length ? ' — temi in comune: ' + e.via.slice(0, 4).map((t) => ((THBY[t] || {}).nome || t).split(':')[0]).join(', ') : '';
+  relList(A.nome + ' + ' + B.nome + via, e.recs.slice().sort((a, b) => b._ts - a._ts));
+}
+function relList(titolo, recs) {
+  const host = $('relSel');
+  host.innerHTML = '<h3 class="view-h" style="font-size:16px;margin:26px 0 4px 0">' + esc(titolo) + '</h3>' +
+    '<div class="note">' + recs.length + ' ' + plural(recs.length, 'contenuto', 'contenuti') + '</div><div id="relSelBox"></div>';
+  incremental($('relSelBox'), recs, (r) => recRow(r), 20);
+  host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+/* ---------- 2. le cerniere ---------- */
+function drawCerniere() {
+  const gt = relGraph('temi');
+  const temi = gt.nodes.filter((n) => n.cross > 0).sort((a, b) => b.cross - a.cross).slice(0, 12);
+  let h = '<div class="rec-group"><h3>I temi che tengono insieme mondi diversi</h3></div>' +
+    '<div class="note" style="margin:-4px 0 10px 2px">Quanti contenuti legano ciascun tema a temi di un altro macro-filone: più alto è il numero, più quel tema è una cerniera e non una casella.</div>';
+  temi.forEach((n) => {
+    h += '<button class="staterow" ' + n.attr + '><span class="sr-n">' + esc(n.nome) + '</span>' +
+      '<span class="sr-meta">' + n.cross + ' ' + plural(n.cross, 'legame', 'legami') + ' fuori dal filone, ' + n.n + ' ' + plural(n.n, 'contenuto', 'contenuti') +
+      ' — ' + esc((MACROBY[n.macro] || {}).nome || '') + '</span></button>';
+  });
+  const gs = relGraph('soggetti');
+  const coppie = gs.edges.slice().sort((a, b) => b.w - a.w).slice(0, 14);
+  h += '<div class="rec-group" style="margin-top:24px"><h3>I dossier che si toccano</h3></div>' +
+    '<div class="note" style="margin:-4px 0 10px 2px">Coppie di dossier che lavorano sugli stessi temi. Un clic elenca i contenuti che li mettono in contatto.</div>';
+  coppie.forEach((e) => {
+    const A = gs.nodes[e.a], B = gs.nodes[e.b];
+    h += '<button class="staterow" data-redge="' + esc(e.a + '|' + e.b) + '" data-rkind="soggetti"><span class="sr-n">' + esc(A.nome) + ' e ' + esc(B.nome) + '</span>' +
+      '<span class="sr-meta">' + e.w + ' punti di contatto, via ' + esc(e.via.slice(0, 3).map((t) => ((THBY[t] || {}).nome || t).split(':')[0]).join(', ')) + '</span></button>';
+  });
+  const ponti = RECORDS.filter((r) => new Set(r.sog || []).size >= 2).sort((a, b) => b._ts - a._ts);
+  h += '<div class="rec-group" style="margin-top:24px"><h3>I contenuti che stanno in due dossier</h3></div>' +
+    '<div class="note" style="margin:-4px 0 10px 2px">' + ponti.length + ' ' + (ponti.length === 1 ? 'contenuto appartiene' : 'contenuti appartengono') + ' a più di un dossier: sono i ponti veri e propri.</div><div id="relPonti"></div>';
+  $('relWrap').innerHTML = h;
+  incremental($('relPonti'), ponti, (r) => recRow(r), 12, 'Nessuno.');
+}
+/* ---------- 3. i percorsi ---------- */
+function relStartOptions() {
+  const so = SOGG.slice().sort((a, b) => b.recs.length - a.recs.length).slice(0, 14)
+    .map((s) => '<button class="chip click" data-rstart="' + esc(JSON.stringify({ k: 'sog', v: s.nome })) + '">' + esc(s.nome) + '</button>').join('');
+  const te = THEMES.map((t) => ({ t: t, n: (TH_RECS[t.id] || []).length })).sort((a, b) => b.n - a.n).slice(0, 10)
+    .map((o) => '<button class="chip click" data-rstart="' + esc(JSON.stringify({ k: 'tema', v: o.t.id })) + '">' + esc(o.t.nome.split(':')[0]) + '</button>').join('');
+  return '<div class="note" style="margin-bottom:6px">Parti da un dossier</div><div class="th" style="margin-bottom:16px">' + so + '</div>' +
+    '<div class="note" style="margin-bottom:6px">oppure da un tema</div><div class="th">' + te + '</div>';
+}
+function relStepRecs(step) {
+  if (step.k === 'sog') {
+    const s = SOGG.find((x) => x.nome === step.v);
+    return s ? s.recs.slice() : [];
+  }
+  return (TH_RECS[step.v] || []).slice();
+}
+function relStepName(step) {
+  return step.k === 'sog' ? step.v : ((THBY[step.v] || {}).nome || step.v);
+}
+function drawPercorsi() {
+  if (!REL.path.length) {
+    $('relWrap').innerHTML = '<div class="note" style="margin-bottom:14px">Scegli un punto di partenza. Vedrai i contenuti in ordine di tempo e, sotto ciascuno, i passaggi che portano altrove: un altro dossier che condivide quello stesso contenuto, o un tema che da lì apre un fronte diverso. Ogni salto resta scritto nel percorso in alto, e da lì si torna indietro.</div>' + relStartOptions();
+    return;
+  }
+  const cur = REL.path[REL.path.length - 1];
+  let recs = relStepRecs(cur).sort((a, b) => b._ts - a._ts);
+  const tot = recs.length;
+  if (cur.from) recs = recs.filter((r) => r._ts <= cur.from + 86400000);
+  const bread = REL.path.map((st, i) => (i ? '<span class="rel-arrow">&#8594;</span>' : '') +
+    '<button class="chip click' + (i === REL.path.length - 1 ? ' on' : '') + '" data-rback="' + i + '">' + esc(trunc(relStepName(st), 30)) + '</button>' +
+    (st.via ? '<span class="rel-via">' + esc(trunc(st.via, 38)) + '</span>' : '')).join('');
+  $('relWrap').innerHTML = '<div class="rel-bread">' + bread + '</div>' +
+    '<div class="note" style="margin:8px 0 12px 2px">' + recs.length + ' ' + plural(recs.length, 'contenuto', 'contenuti') + ' in ' + esc(relStepName(cur)) +
+    (cur.from ? ' fino al giorno in cui sei arrivato, su ' + tot + ' in tutto' : '') + '.</div><div id="relPath"></div>';
+  const curKey = cur.k === 'sog' ? cur.v : null;
+  incremental($('relPath'), recs.slice(0, 60), (r) => {
+    const salti = [];
+    (r.sog || []).forEach((s) => { if (s !== curKey) salti.push({ k: 'sog', v: s, via: 'lo stesso contenuto' }); });
+    (r.th || []).forEach((t) => {
+      if (cur.k === 'tema' && t === cur.v) return;
+      if (!THBY[t]) return;
+      salti.push({ k: 'tema', v: t, via: trunc(r.t || '', 38) });
+    });
+    const chips = salti.slice(0, 5).map((s) => '<button class="chip click rel-jump" data-rjump="' + esc(JSON.stringify({ k: s.k, v: s.v, via: s.via, from: r._ts })) + '">' +
+      (s.k === 'sog' ? 'dossier ' : 'tema ') + esc(trunc(s.k === 'sog' ? s.v : ((THBY[s.v] || {}).nome || s.v).split(':')[0], 26)) + '</button>').join('');
+    return recRow(r, chips ? '<div class="rel-jumps"><span class="rel-jl">porta a</span>' + chips + '</div>' : null, { hideTh: true });
+  }, 15, 'Nessun contenuto.');
+}
+function relTip() {
+  const wrap = $('relWrap'), tip = $('uniTip');
   if (!tip) return;
   wrap.onmousemove = (e) => {
     const el = e.target.closest ? e.target.closest('[data-utip]') : null;
