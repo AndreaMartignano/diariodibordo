@@ -946,12 +946,17 @@ function parseTS(s) {
   const d = new Date(v);
   return isNaN(d.getTime()) ? null : d;
 }
-function dayDate(r) { return parseTS((r.d || '1970-01-01') + 'T12:00:00Z'); }
+/* La data di riferimento di un contenuto e' quella dell'ultima attivita':
+   per le chat e i progetti Claude e' d2 (ultimo aggiornamento), altrimenti d. */
+function recDay(r) { return (r && r.d2 && r.d && r.d2 > r.d) ? r.d2 : ((r && r.d) || ''); }
+function dayDate(r) { return parseTS((recDay(r) || '1970-01-01') + 'T12:00:00Z'); }
+function sameDay(dt, day) { return !!(dt && day && String(dt).slice(0, 10) === day); }
 function recTS(r) {
-  const d = parseTS(r.dt) || dayDate(r);
+  const day = recDay(r);
+  const d = (sameDay(r.dt, day) && parseTS(r.dt)) || dayDate(r);
   return d ? d.getTime() : 0;
 }
-function hasTime(r) { return !!(r.dt && /T\d{2}:\d{2}/.test(r.dt)); }
+function hasTime(r) { return !!(r.dt && /T\d{2}:\d{2}/.test(r.dt) && sameDay(r.dt, recDay(r))); }
 /* Le durate nel dataset sono in millisecondi; il rilevamento è automatico. */
 let DUR_MS = true;
 function durStr(v) {
@@ -1369,6 +1374,7 @@ function recRow(r, extraHtml, opts) {
   const d = dayDate(r);
   const bits = [];
   bits.push(fmtDate.format(d) + (hasTime(r) ? ', ' + fmtTime.format(parseTS(r.dt)) : ''));
+  if (r.d2 && r.d && r.d2 > r.d) bits.push('aperta il ' + fmtDateShort.format(parseTS(r.d + 'T12:00:00Z')));
   if (r.src === 'plaud' && r.dur) bits.push(durStr(r.dur));
   if (r.tipo) bits.push(cap1(r.tipo));
   if (r.src === 'plaud' && r.fold) bits.push('cartella: ' + r.fold);
@@ -1431,7 +1437,8 @@ function groupByDay(recs) {
   const groups = [];
   let cur = null;
   recs.forEach((r) => {
-    if (!cur || cur.d !== r.d) { cur = { d: r.d, recs: [] }; groups.push(cur); }
+    const rd = recDay(r);
+    if (!cur || cur.d !== rd) { cur = { d: rd, recs: [] }; groups.push(cur); }
     cur.recs.push(r);
   });
   return groups;
@@ -1837,7 +1844,7 @@ function renderData() {
   const now = Date.now();
   let rs = RECORDS;
   if (dataFiltro.src) rs = rs.filter((r) => r.src === dataFiltro.src);
-  if (dataFiltro.year) rs = rs.filter((r) => String(r.d || '').slice(0, 4) === dataFiltro.year);
+  if (dataFiltro.year) rs = rs.filter((r) => recDay(r).slice(0, 4) === dataFiltro.year);
   if (dataFiltro.period !== 'all') {
     const days = parseInt(dataFiltro.period, 10);
     const limit = now - days * 86400000;
@@ -1853,7 +1860,7 @@ function renderData() {
     const mk = cap1(fmtMonth.format(dayDate(g.recs[0])));
     if (mk !== lastMonth) {
       lastMonth = mk;
-      const inMonth = rs.filter((r) => String(r.d || '').slice(0, 7) === String(g.d).slice(0, 7));
+      const inMonth = rs.filter((r) => recDay(r).slice(0, 7) === String(g.d).slice(0, 7));
       html += '<div class="rec-group"><h3>' + esc(mk) + ' <span class="cnt">— ' + inMonth.length + ' ' + plural(inMonth.length, 'contenuto', 'contenuti') + '</span></h3></div>';
     }
     return html + dayGroupHtml(g);
@@ -1861,7 +1868,7 @@ function renderData() {
 }
 function initDataFilters() {
   bindSeg($('dataSrc'), (v) => { dataFiltro.src = v; renderData(); });
-  const years = [...new Set(RECORDS.map((r) => String(r.d || '').slice(0, 4)).filter(Boolean))].sort().reverse();
+  const years = [...new Set(RECORDS.map((r) => recDay(r).slice(0, 4)).filter(Boolean))].sort().reverse();
   $('dataYear').innerHTML = '<option value="">tutti</option>' + years.map((y) => '<option value="' + y + '">' + y + '</option>').join('');
   $('dataPeriod').addEventListener('change', () => { dataFiltro.period = $('dataPeriod').value; renderData(); });
   $('dataYear').addEventListener('change', () => { dataFiltro.year = $('dataYear').value; renderData(); });
@@ -2326,7 +2333,7 @@ function renderTimeline() {
   lanes.forEach(function (l) {
     let dots = '';
     l.win.forEach(function (r) {
-      dots += '<span class="tl-dot f-' + srcOf(r).fam + '" style="left:' + xpc(r._ts).toFixed(2) + '%" data-open="' + esc(r.id) + '" title="' + esc((r.d || '') + ' — ' + (r.t || '')) + '"></span>';
+      dots += '<span class="tl-dot f-' + srcOf(r).fam + '" style="left:' + xpc(r._ts).toFixed(2) + '%" data-open="' + esc(r.id) + '" title="' + esc(recDay(r) + ' — ' + (r.t || '')) + '"></span>';
     });
     laneDl(l).forEach(function (e) {
       const ts = new Date(e[0].d + 'T12:00:00').getTime();
@@ -3290,7 +3297,7 @@ function openDetail(id, quotes) {
   if (r.src === 'plaud' && r.dur) meta.push('durata ' + durStr(r.dur));
   if (r.tipo) meta.push(cap1(r.tipo));
   if (r.fold) meta.push('cartella Plaud: ' + r.fold);
-  if (r.d2 && r.d2 !== r.d) meta.push('ultimo aggiornamento: ' + fmtDate.format(parseTS(r.d2 + 'T12:00:00Z')));
+  if (r.d2 && r.d && r.d2 > r.d) meta.push('aperta il ' + fmtDate.format(parseTS(r.d + 'T12:00:00Z')));
   if (r.nm) meta.push(r.nm + ' ' + plural(r.nm, 'messaggio', 'messaggi'));
   if (r.nd) meta.push(r.nd + ' ' + plural(r.nd, 'documento', 'documenti'));
 
