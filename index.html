@@ -43,6 +43,11 @@
   --claude-bg: #fbe9dd;
   --claude-bd: #f0c5a6;
   --claude-ink: #964313;
+  /* fonte: Cowork */
+  --cw: #0f8f7a;
+  --cw-bg: #ddf2ec;
+  --cw-bd: #a9ddd0;
+  --cw-ink: #0a5f52;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -72,6 +77,10 @@
     --claude-bg: #43220f;
     --claude-bd: #74391a;
     --claude-ink: #f0ac7e;
+    --cw: #3fb9a2;
+    --cw-bg: #0d332c;
+    --cw-bd: #17564a;
+    --cw-ink: #7fd9c4;
   }
 }
 * { box-sizing: border-box; }
@@ -181,6 +190,8 @@ h1.view-h { font-size: 21px; margin: 0 0 3px 0; font-weight: 650; letter-spacing
 .src .sub { font-weight: 600; font-size: 10.5px; opacity: 0.9; padding-left: 5px; margin-left: 1px; border-left: 1px solid currentColor; }
 .src-plaud { background: var(--plaud-bg); color: var(--plaud-ink); border-color: var(--plaud-bd); }
 .src-claude { background: var(--claude-bg); color: var(--claude-ink); border-color: var(--claude-bd); }
+.src-cowork { background: var(--cw-bg); color: var(--cw-ink); border-color: var(--cw-bd); }
+.src-cowork::before { border-radius: 2px; transform: rotate(45deg); }
 .st-prog::before { border-radius: 2px; }
 .st-design::before { background: transparent; box-shadow: inset 0 0 0 2px currentColor; }
 .src.lg { font-size: 12px; padding: 3px 10px 3px 9px; }
@@ -195,6 +206,8 @@ h1.view-h { font-size: 21px; margin: 0 0 3px 0; font-weight: 650; letter-spacing
 .mini::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
 .m-plaud { background: var(--plaud-bg); color: var(--plaud-ink); border-color: var(--plaud-bd); }
 .m-claude { background: var(--claude-bg); color: var(--claude-ink); border-color: var(--claude-bd); }
+.m-cowork { background: var(--cw-bg); color: var(--cw-ink); border-color: var(--cw-bd); }
+.m-cowork::before { border-radius: 1px; transform: rotate(45deg); }
 .m-prog::before { border-radius: 1px; }
 .m-design::before { background: transparent; box-shadow: inset 0 0 0 2px currentColor; }
 .mini .lbl { font-weight: 500; opacity: 0.95; }
@@ -345,6 +358,7 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
 .seg button .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
 .seg button .dot.plaud { background: var(--plaud); }
 .seg button .dot.claude { background: var(--claude); }
+.seg button .dot.cowork { background: var(--cw); }
 .seg button.on .dot { box-shadow: 0 0 0 1px var(--page); }
 
 /* ---------- grafico ---------- */
@@ -531,12 +545,13 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
     <div class="bar-wrap hidden" id="gateBarWrap"><div class="bar-fill" id="gateBar"></div></div>
     <div id="gateMsg"></div>
     <div class="gate-legend">
-      Le due fonti dell'archivio:
+      Le fonti dell'archivio:
       <div style="margin-top:7px">
         <span class="src src-plaud">Plaud</span>
         <span class="src src-claude">Claude<span class="sub">Chat</span></span>
         <span class="src src-claude st-prog">Claude<span class="sub">Progetto</span></span>
         <span class="src src-claude st-design">Claude<span class="sub">Design</span></span>
+        <span class="src src-cowork">Cowork</span>
       </div>
     </div>
   </div>
@@ -547,7 +562,7 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
   <aside id="sidebar">
     <div class="brand">
       <div class="nm">Archivio</div>
-      <div class="sb">Plaud + Claude</div>
+      <div class="sb">Plaud + Claude + Cowork</div>
     </div>
     <nav id="nav">
       <button data-view="home" class="active"><span>Panoramica</span></button>
@@ -810,7 +825,7 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
               <button data-urighe="temi">Righe: temi</button>
             </div>
             <label>Tema <select id="uniTema"></select></label>
-            <label>Fonte <select id="uniFonte"><option value="">Tutte</option><option value="plaud">Plaud</option><option value="claude">Claude</option></select></label>
+            <label>Fonte <select id="uniFonte"><option value="">Tutte</option><option value="plaud">Plaud</option><option value="claude">Claude</option><option value="cowork">Cowork</option></select></label>
             <button class="btn" id="uniReset">Azzera</button>
           </div>
           <div class="note" id="uniInfo"></div>
@@ -1008,9 +1023,10 @@ const SRC = {
   plaud:  { fam: 'plaud',  cls: 'src-plaud',              label: 'Plaud',  sub: '',          nome: 'Plaud',              plur: 'registrazioni Plaud', sing: 'registrazione Plaud' },
   chat:   { fam: 'claude', cls: 'src-claude',             label: 'Claude', sub: 'Chat',      nome: 'Claude · Chat',      plur: 'chat Claude',         sing: 'chat Claude' },
   prog:   { fam: 'claude', cls: 'src-claude st-prog',     label: 'Claude', sub: 'Progetto',  nome: 'Claude · Progetto',  plur: 'progetti Claude',     sing: 'progetto Claude' },
-  design: { fam: 'claude', cls: 'src-claude st-design',   label: 'Claude', sub: 'Design',    nome: 'Claude · Design',    plur: 'sessioni Design',     sing: 'sessione Design' }
+  design: { fam: 'claude', cls: 'src-claude st-design',   label: 'Claude', sub: 'Design',    nome: 'Claude · Design',    plur: 'sessioni Design',     sing: 'sessione Design' },
+  cowork: { fam: 'cowork', cls: 'src-cowork',             label: 'Cowork', sub: '',          nome: 'Cowork',             plur: 'sessioni Cowork',     sing: 'sessione Cowork' }
 };
-const SRC_KEYS = ['plaud', 'chat', 'prog', 'design'];
+const SRC_KEYS = ['plaud', 'chat', 'prog', 'design', 'cowork'];
 function srcOf(r) { return SRC[r && r.src] || SRC.chat; }
 function srcBadge(r, big) {
   const s = srcOf(r);
@@ -1018,7 +1034,7 @@ function srcBadge(r, big) {
     s.label + (s.sub ? '<span class="sub">' + s.sub + '</span>' : '') + '</span>';
 }
 function countBySrc(recs) {
-  const c = { plaud: 0, chat: 0, prog: 0, design: 0, tot: 0 };
+  const c = { plaud: 0, chat: 0, prog: 0, design: 0, cowork: 0, tot: 0 };
   (recs || []).forEach((r) => { if (c[r.src] !== undefined) { c[r.src]++; c.tot++; } });
   return c;
 }
@@ -1029,6 +1045,7 @@ function countsHtml(c, showZero) {
   add('m-claude', c.chat, 'chat', 'chat');
   add('m-claude m-prog', c.prog, 'progetto', 'progetti');
   add('m-claude m-design', c.design, 'design', 'design');
+  add('m-cowork', c.cowork, 'Cowork', 'Cowork');
   return '<span class="cnt-src">' + (parts.join('') || '<span class="mini" style="border-color:var(--baseline);color:var(--muted)">0</span>') + '</span>';
 }
 function countsOf(recs) { return countsHtml(countBySrc(recs)); }
@@ -1038,7 +1055,8 @@ const SRC_FILTERS = [
   { v: 'plaud', l: 'Plaud', dot: 'plaud' },
   { v: 'chat', l: 'Chat', dot: 'claude' },
   { v: 'prog', l: 'Progetti', dot: 'claude' },
-  { v: 'design', l: 'Design', dot: 'claude' }
+  { v: 'design', l: 'Design', dot: 'claude' },
+  { v: 'cowork', l: 'Cowork', dot: 'cowork' }
 ];
 function segHtml(cur) {
   return SRC_FILTERS.map((f) =>
@@ -1463,17 +1481,17 @@ function periodoLabel() {
 function renderHome() {
   const c = countBySrc(RECORDS);
   const oreTot = Math.round(RECORDS.reduce((a, r) => a + (r.src === 'plaud' ? (DUR_MS ? (r.dur || 0) / 3600000 : (r.dur || 0) / 3600) : 0), 0));
-  const nMsg = RECORDS.reduce((a, r) => a + ((r.src === 'chat' || r.src === 'design') ? (r.nm || 0) : 0), 0);
+  const nMsg = RECORDS.reduce((a, r) => a + ((r.src === 'chat' || r.src === 'design' || r.src === 'cowork') ? (r.nm || 0) : 0), 0);
   const nDoc = RECORDS.reduce((a, r) => a + (r.src === 'prog' ? (r.nd || 0) : 0), 0);
 
-  $('homeIntro').innerHTML = 'L\'archivio unifica le registrazioni Plaud e le conversazioni Claude di Andrea Martignano: ' +
+  $('homeIntro').innerHTML = 'L\'archivio unifica le registrazioni Plaud, le conversazioni Claude e le sessioni Cowork di Andrea Martignano: ' +
     '<b>' + c.tot + ' contenuti</b> dal ' + fmtDate.format(dayDate(RECORDS[RECORDS.length - 1])) +
     ' al ' + fmtDate.format(dayDate(RECORDS[0])) + '. La fonte di ogni contenuto è sempre indicata dal badge colorato.';
 
   $('homeTiles').innerHTML = [
     { v: c.tot, l: 'contenuti in archivio', x: countsHtml(c) },
     { v: c.plaud, l: 'registrazioni Plaud', x: '<span class="mini m-plaud">' + oreTot + ' <span class="lbl">ore di audio</span></span>' },
-    { v: c.chat + c.prog + c.design, l: 'contenuti Claude', x: countsHtml({ plaud: 0, chat: c.chat, prog: c.prog, design: c.design }) },
+    { v: c.chat + c.prog + c.design + c.cowork, l: 'contenuti Claude', x: countsHtml({ plaud: 0, chat: c.chat, prog: c.prog, design: c.design, cowork: c.cowork }) },
     { v: nMsg.toLocaleString('it-IT'), l: 'messaggi nelle conversazioni', x: '<span class="mini m-claude m-prog">' + nDoc + ' <span class="lbl">documenti nei progetti</span></span>' },
     { v: MACRO.length + ' · ' + THEMES.length, l: 'macro-filoni e temi' },
     { v: periodoLabel(), l: 'periodo coperto', sm: true }
@@ -2499,7 +2517,8 @@ function uniRecs() {
     if (r._ts < from) return false;
     if (UNI.tema && (r.th || []).indexOf(UNI.tema) < 0) return false;
     if (UNI.fonte === 'plaud' && r.src !== 'plaud') return false;
-    if (UNI.fonte === 'claude' && r.src === 'plaud') return false;
+    if (UNI.fonte === 'cowork' && r.src !== 'cowork') return false;
+    if (UNI.fonte === 'claude' && (r.src === 'plaud' || r.src === 'cowork')) return false;
     return true;
   });
 }
@@ -2587,7 +2606,7 @@ function drawMap() {
   const mesi = uniMesi(rs);
   const filtri = [];
   if (UNI.tema) filtri.push('tema: ' + ((THBY[UNI.tema] || {}).nome || UNI.tema));
-  if (UNI.fonte) filtri.push('fonte: ' + (UNI.fonte === 'plaud' ? 'Plaud' : 'Claude'));
+  if (UNI.fonte) filtri.push('fonte: ' + (UNI.fonte === 'plaud' ? 'Plaud' : UNI.fonte === 'cowork' ? 'Cowork' : 'Claude'));
   $('uniInfo').innerHTML = rs.length + ' ' + plural(rs.length, 'contenuto', 'contenuti') +
     (mesi.length ? ' fra ' + esc(mLong(mesi[0])) + ' e ' + esc(mLong(mesi[mesi.length - 1])) : '') +
     (filtri.length ? ' — ' + esc(filtri.join(', ')) : '');
@@ -3322,7 +3341,7 @@ function openDetail(id, quotes) {
     rows.map((x) => '<div class="dsec"><h3>' + x[0] + '</h3><div>' + x[1] + '</div></div>').join('') +
     '<div class="dsec"><h3>Sintesi</h3>' +
     (r.sin ? '<div class="sum">' + mdRender(sinMd) + '</div>' : '<div class="empty">Nessuna sintesi disponibile per questo contenuto.</div>') + '</div>' +
-    '<div class="dsec"><h3>' + (r.src === 'plaud' ? 'Trascrizione' : r.src === 'prog' ? 'Documenti del progetto' : 'Conversazione') + '</h3>' +
+    '<div class="dsec"><h3>' + (r.src === 'plaud' ? 'Trascrizione' : r.src === 'prog' ? 'Documenti del progetto' : r.src === 'cowork' ? 'Richieste e esito della sessione' : 'Conversazione') + '</h3>' +
     '<div id="txHost"><div class="load-line">Carico il contenuto integrale…</div></div></div>';
 
   $('overlay').classList.remove('hidden');
