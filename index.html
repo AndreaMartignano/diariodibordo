@@ -755,9 +755,12 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
       <!-- ---------- Digest ---------- -->
       <section id="view-digest" class="view hidden">
         <div id="digIndex">
-          <h1 class="view-h">Digest</h1>
-          <div class="view-note">Il riepilogo settimanale generato ogni lunedì alle 9:00: la settimana in archivio, i temi prioritari, le scadenze e le cose da fare nella settimana successiva. Ogni passaggio cita le sue fonti: un clic apre il contenuto originale con il brano evidenziato in giallo.</div>
-          <div id="digList"></div>
+          <h1 class="view-h">Digest giornalieri</h1>
+          <div class="view-note">Il riepilogo prodotto ogni mattina alle 9:00, dal martedì alla domenica: il giorno in archivio, i temi della giornata, le scadenze dei prossimi sette giorni e la to do list di cosa fare oggi. Ogni passaggio cita le sue fonti: un clic apre il contenuto originale con il brano evidenziato in giallo.</div>
+          <div id="digListG"></div>
+          <h1 class="view-h" style="margin-top:40px">Digest settimanali</h1>
+          <div class="view-note">Il riepilogo del lunedì: la settimana in archivio, i temi prioritari, le scadenze dei prossimi quattordici giorni e la to do list della settimana che inizia.</div>
+          <div id="digListS"></div>
         </div>
         <div id="digView" class="hidden"></div>
       </section>
@@ -2686,6 +2689,13 @@ function resolveRec(id) {
   return null;
 }
 function isDigest(rep) { return String((rep && rep.id) || '').indexOf('digest-') === 0; }
+function isWeekly(rep) {
+  const t = String((rep && rep.titolo) || '').toLowerCase();
+  if (t.indexOf('settimanal') >= 0) return true;
+  if (t.indexOf('giornalier') >= 0) return false;
+  const d = String((rep && rep.data) || '');
+  return d ? new Date(d + 'T12:00:00').getDay() === 1 : false;
+}
 function repCard(rep, i) {
   const nf = (rep.sezioni || []).reduce((a, s) => a + (s.paragrafi || []).reduce((b, p) => b + (p.fonti || []).length, 0), 0);
   return '<article class="rec" data-rep="' + i + '" tabindex="0">' +
@@ -2700,7 +2710,10 @@ function renderReports() {
   const ds = REPORTS.map((rep, i) => [rep, i]).filter((e) => isDigest(e[0]))
     .sort((a, b) => String(a[0].data || '') < String(b[0].data || '') ? 1 : -1);
   $('navDig').textContent = ds.length || '';
-  $('digList').innerHTML = ds.length ? ds.map((e) => repCard(e[0], e[1])).join('') : '<div class="empty">Nessun digest ancora: il primo arriva lunedì alle 9:00.</div>';
+  const gg = ds.filter((e) => !isWeekly(e[0]));
+  const ss = ds.filter((e) => isWeekly(e[0]));
+  $('digListG').innerHTML = gg.length ? gg.map((e) => repCard(e[0], e[1])).join('') : '<div class="empty">Nessun digest giornaliero: il prossimo arriva domattina alle 9:00.</div>';
+  $('digListS').innerHTML = ss.length ? ss.map((e) => repCard(e[0], e[1])).join('') : '<div class="empty">Nessun digest settimanale: il prossimo arriva lunedì alle 9:00.</div>';
 }
 function fontiChips(fonti) {
   return (fonti || []).map((f) => {
@@ -2712,7 +2725,7 @@ function fontiChips(fonti) {
       '<span style="color:var(--muted);margin-left:5px">' + esc(fmtDateShort.format(dayDate(r))) + '</span></span>';
   }).join('');
 }
-function reportPlain(rep) {function todoKey(rep, k) { return 'todo:' + (rep.id || rep.titolo || '') + ':' + k; }
+function todoKey(rep, k) { return 'todo:' + (rep.id || rep.titolo || '') + ':' + k; }
 function todoGet(rep, k) { try { return localStorage.getItem(todoKey(rep, k)) === '1'; } catch (e) { return false; } }
 function todoSet(rep, k, v) { try { v ? localStorage.setItem(todoKey(rep, k), '1') : localStorage.removeItem(todoKey(rep, k)); } catch (e) {} }
 function todoHtml(rep, sec) {
@@ -2756,6 +2769,7 @@ function wireTodos(el, rep) {
     });
   });
 }
+function reportPlain(rep) {
 
   let out = (rep.titolo || '') + '\n' + 'Domanda: ' + (rep.domanda || '') + ' — ' + (rep.data || '') + '\n\n';
   (rep.sezioni || []).forEach((s) => {
