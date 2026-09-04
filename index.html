@@ -371,6 +371,16 @@ input[type=search] { -webkit-appearance: none; appearance: none; }
 .rep-sec { font-size: 15.5px; margin: 22px 0 6px 0; }
 .rep-p { font-size: 14px; margin: 8px 0 14px 0; }
 .rep-p .fonti { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+.rep-todo { margin: 2px 0 16px 0; border: 1px solid var(--border); border-radius: 9px; padding: 11px 13px 8px 13px; }
+.rep-todo .todo-hd { font-size: 11.5px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 7px; }
+.rep-todo .todo-sub { font-size: 11.5px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; margin: 11px 0 6px 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 9px; font-size: 14px; padding: 4px 0; cursor: pointer; }
+.todo-item input { margin: 2px 0 0 0; width: 15px; height: 15px; flex: 0 0 auto; cursor: pointer; accent-color: var(--accent); }
+.todo-item .todo-tx { flex: 1; }
+.todo-item.done .todo-tx { text-decoration: line-through; color: var(--muted); }
+.todo-item .todo-when { color: var(--muted); font-size: 12.5px; margin-left: 5px; white-space: nowrap; }
+.rep-todo .todo-reset { margin-top: 8px; font-size: 12px; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+
 .chip.fonte .src { margin-right: 5px; }
 .chip.fonte { display: inline-flex; align-items: center; gap: 2px; padding: 2px 9px 2px 4px; }
 .callout { background: var(--accent-soft); border-radius: 8px; padding: 11px 14px; font-size: 13px; color: var(--ink-1); margin-bottom: 18px; }
@@ -2702,7 +2712,51 @@ function fontiChips(fonti) {
       '<span style="color:var(--muted);margin-left:5px">' + esc(fmtDateShort.format(dayDate(r))) + '</span></span>';
   }).join('');
 }
-function reportPlain(rep) {
+function reportPlain(rep) {function todoKey(rep, k) { return 'todo:' + (rep.id || rep.titolo || '') + ':' + k; }
+function todoGet(rep, k) { try { return localStorage.getItem(todoKey(rep, k)) === '1'; } catch (e) { return false; } }
+function todoSet(rep, k, v) { try { v ? localStorage.setItem(todoKey(rep, k), '1') : localStorage.removeItem(todoKey(rep, k)); } catch (e) {} }
+function todoHtml(rep, sec) {
+  const items = sec.todo || [];
+  if (!items.length) return '';
+  let h = '<div class="rep-todo"><div class="todo-hd">Da spuntare</div>';
+  let lastG = null;
+  items.forEach((t, j) => {
+    const tx = typeof t === 'string' ? t : (t.t || '');
+    const when = typeof t === 'string' ? '' : (t.q || '');
+    const grp = typeof t === 'string' ? null : (t.g || null);
+    if (grp && grp !== lastG) { h += '<div class="todo-sub">' + esc(grp) + '</div>'; lastG = grp; }
+    const k = (sec.titolo || '') + '|' + j;
+    const on = todoGet(rep, k);
+    h += '<label class="todo-item' + (on ? ' done' : '') + '" data-todok="' + esc(k) + '">' +
+      '<input type="checkbox"' + (on ? ' checked' : '') + '>' +
+      '<span class="todo-tx">' + esc(tx) + (when ? '<span class="todo-when">' + esc(when) + '</span>' : '') + '</span></label>';
+  });
+  h += '<button class="todo-reset" data-todoreset="1">Azzera le spunte di questo elenco</button>';
+  return h + '</div>';
+}
+function wireTodos(el, rep) {
+  el.querySelectorAll('.todo-item').forEach((lab) => {
+    const inp = lab.querySelector('input');
+    if (!inp) return;
+    inp.addEventListener('change', () => {
+      lab.classList.toggle('done', inp.checked);
+      todoSet(rep, lab.getAttribute('data-todok') || '', inp.checked);
+    });
+  });
+  el.querySelectorAll('[data-todoreset]').forEach((b) => {
+    b.addEventListener('click', () => {
+      const box = b.closest('.rep-todo');
+      if (!box) return;
+      box.querySelectorAll('.todo-item').forEach((lab) => {
+        const inp = lab.querySelector('input');
+        if (inp) { inp.checked = false; }
+        lab.classList.remove('done');
+        todoSet(rep, lab.getAttribute('data-todok') || '', false);
+      });
+    });
+  });
+}
+
   let out = (rep.titolo || '') + '\n' + 'Domanda: ' + (rep.domanda || '') + ' — ' + (rep.data || '') + '\n\n';
   (rep.sezioni || []).forEach((s) => {
     out += String(s.titolo || '').toUpperCase() + '\n';
@@ -2710,6 +2764,12 @@ function reportPlain(rep) {
       const f = (p.fonti || []).map((x) => { const r = resolveRec(x.rec); return r ? r.t : null; }).filter(Boolean).join('; ');
       out += (p.testo || '') + (f ? ' (Fonti: ' + f + ')' : '') + '\n\n';
     });
+    (s.todo || []).forEach((t) => {
+      const tx = typeof t === 'string' ? t : (t.t || '');
+      const when = typeof t === 'string' ? '' : (t.q || '');
+      out += '[ ] ' + tx + (when ? ' (' + when + ')' : '') + '\n';
+    });
+    if ((s.todo || []).length) out += '\n';
   });
   if ((rep.strategia || []).length) {
     out += 'RAGIONAMENTO STRATEGICO\n';
@@ -2736,6 +2796,7 @@ function openReport(i) {
     (sec.paragrafi || []).forEach((p) => {
       html += '<div class="rep-p">' + esc(p.testo || '') + '<div class="fonti">' + fontiChips(p.fonti) + '</div></div>';
     });
+    html += todoHtml(rep, sec);
   });
   if ((rep.strategia || []).length) {
     html += '<h3 class="rep-sec">Ragionamento strategico</h3>';
@@ -2746,6 +2807,7 @@ function openReport(i) {
   html += '</div>';
   el.innerHTML = html;
   window.scrollTo(0, 0);
+  wireTodos(el, rep);
 }
 function backToReports() {
   $('repView').classList.add('hidden');
