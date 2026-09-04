@@ -1702,18 +1702,22 @@ function openProgetto(nome) {
     '<h2>' + esc(p.nome) + '</h2>' +
     '<div class="note">' + (p.rec && p.rec.nd ? p.rec.nd + ' ' + plural(p.rec.nd, 'documento', 'documenti') : 'nessun documento caricato') +
     ' · ' + chats.length + ' ' + plural(chats.length, 'conversazione collegata', 'conversazioni collegate') +
-    (p.rec ? ' · creato il ' + fmtDate.format(dayDate(p.rec)) : '') + '</div>' +
+    (p.rec ? ' · aperto il ' + fmtDate.format(parseTS(p.rec.d + 'T12:00:00Z')) +
+      (p.rec.d2 && p.rec.d2 > p.rec.d ? ' · ultimo aggiornamento ' + fmtDate.format(parseTS(p.rec.d2 + 'T12:00:00Z')) : '') : '') + '</div>' +
     '<div style="margin-bottom:10px">' + countsOf(p.all) + '</div>' +
     (sogSet.size ? '<div>' + [...sogSet].map((s) => '<span class="chip click" data-sog="' + esc(s) + '">' + esc(s) + '</span>').join('') + '</div>' : '') +
     (p.rec && p.rec.sin ? '<div class="dsec"><h3>Descrizione</h3><div class="sum">' + mdRender(p.rec.sin) + '</div></div>' : '') +
     (p.rec ? '<div class="tools" style="margin:14px 0 0 0"><button class="btn" data-open="' + esc(p.rec.id) + '">Apri la scheda del progetto</button></div>' : '') +
     '</div>' +
     '<div class="panel"><h2>Documenti del progetto</h2>' +
-    '<div class="note">I file caricati dentro il progetto Claude.</div><div id="prjDocs"></div></div>' +
-    '<div class="panel flat"><h2 style="font-size:16px;margin-bottom:6px">Conversazioni nel progetto ' + countsHtml(countBySrc(chats)) + '</h2>' +
+    '<div class="note">I file caricati dentro il progetto Claude' +
+    (p.rec && p.rec.d2 && p.rec.d2 > p.rec.d ? ', aggiornati l\'ultima volta il ' + fmtDate.format(parseTS(p.rec.d2 + 'T12:00:00Z')) : '') +
+    '.</div><div id="prjDocs"></div></div>' +
+    '<div class="panel flat"><h2 style="font-size:16px;margin-bottom:2px">Conversazioni nel progetto ' + countsHtml(countBySrc(chats)) + '</h2>' +
+    '<div class="note" style="margin-bottom:10px">Le conversazioni svolte dentro il progetto, dalla più recente. Gli aggiornamenti ai documenti non compaiono qui: stanno nel riquadro sopra, quindi la data più recente del progetto può essere più avanti dell\'ultima conversazione.</div>' +
     '<div id="prjChats"></div></div>' +
-    (correlati.length ? '<div class="panel flat" style="margin-top:22px"><h2 style="font-size:16px;margin-bottom:2px">Contenuti correlati per soggetto ' + countsHtml(countBySrc(correlati)) + '</h2>' +
-      '<div class="note" style="margin-bottom:10px">Registrazioni Plaud e conversazioni che riguardano gli stessi soggetti del progetto (' + [...sogSet].map(esc).join(', ') + ').</div>' +
+    (correlati.length ? '<div class="panel flat" style="margin-top:22px"><h2 style="font-size:16px;margin-bottom:2px">Fuori dal progetto: contenuti sugli stessi soggetti ' + countsHtml(countBySrc(correlati)) + '</h2>' +
+      '<div class="note" style="margin-bottom:10px">Non appartengono a questo progetto Claude, ma riguardano gli stessi soggetti (' + [...sogSet].map(esc).join(', ') + '): registrazioni Plaud e conversazioni fatte altrove.</div>' +
       '<div id="prjRel"></div></div>' : '');
   incremental($('prjChats'), chats, (r) => recRow(r), 20, 'Nessuna conversazione collegata a questo progetto.');
   if (correlati.length) incremental($('prjRel'), correlati, (r) => recRow(r), 15);
