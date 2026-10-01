@@ -99,7 +99,8 @@ details.sch[open]>summary{border-bottom:1px solid var(--grid);background:var(--s
 .f dt{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:2px}
 .f dd{margin:0;font-size:14px;color:var(--ink-1)}
 .prg{background:var(--surface-2);border:1px solid var(--border);border-left:4px solid var(--onw);border-radius:10px;padding:11px 13px;margin:0 0 13px}
-.prg .tt{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:8px}
+.prg .tt{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:3px}
+.prg .sb{font-size:12px;color:var(--muted);margin:0 0 9px}
 .prg ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .prg li{display:flex;gap:9px;font-size:14px;line-height:1.42;color:var(--ink-1)}
 .prg li .n{flex:0 0 auto;width:19px;height:19px;border-radius:50%;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
@@ -169,12 +170,13 @@ function cv(n){return getComputedStyle(document.documentElement).getPropertyValu
 function stcol(s){return cv(STCOL[s]||"--s-dorm");}
 function pcol(i){return cv("--p-"+i);}
 function perNome(i){var x=(D.perimetri||[]).filter(function(z){return z.id===i;})[0];return x?x.nome:i;}
-function nProg(p){var n=(p.progetti||[]).length;return n===0?"nessun progetto collegato":(n===1?"1 progetto collegato":n+" progetti collegati");}
-function titProg(p){var n=(p.progetti||[]).length;return n===0?"Nessun progetto collegato":(n===1?"Il progetto collegato":"I "+n+" progetti collegati");}
+function nProg(p){var n=(p.progetti||[]).length;return n===0?"nessun fronte di lavoro":(n===1?"1 fronte di lavoro":n+" fronti di lavoro");}
+function titProg(p){var n=(p.progetti||[]).length;return n===0?"Nessun fronte di lavoro":(n===1?"Il fronte di lavoro":"I "+n+" fronti di lavoro");}
 function progHtml(p){var l=p.progetti||[],c=pcol(p.perimetro);
  var h='<div class="prg" style="border-left-color:'+c+'"><div class="tt">'+esc(titProg(p))+'</div>';
+ if(l.length) h+='<div class="sb">Progetti avviati, ipotesi di lavoro, tavoli e occasioni concrete.</div>';
  h+= l.length ? '<ol>'+l.map(function(x,i){return '<li><span class="n" style="background:'+c+'">'+(i+1)+'</span><span>'+esc(x)+'</span></li>';}).join("")+'</ol>'
-  : '<div class="no">In archivio non risulta collegato nessun progetto concreto a questo soggetto.</div>';
+  : '<div class="no">In archivio non risulta aperto nessun fronte di lavoro con questo soggetto.</div>';
  return h+'</div>';}
 function tipEl(){var t=document.getElementById("tip");if(!t){t=document.createElement("div");t.id="tip";document.body.appendChild(t);}return t;}
 function moveTip(ev){var t=tipEl();var x=ev.clientX+15,y=ev.clientY+15,w=t.offsetWidth||230,h=t.offsetHeight||96;
@@ -186,7 +188,7 @@ function showTip(ev,p,col){var t=tipEl(),si=STORD.indexOf(p.stato)+1;
  t.innerHTML='<b>'+esc(p.nome)+'</b><div class="r"><i style="background:'+col+'"></i>'+esc(perNome(p.perimetro))+'</div>'+
   '<div class="r">'+esc(p.stato)+(si>0?' (anello '+si+')':'')+'</div>'+
   '<div class="r">'+esc(nProg(p))+'</div>'+
-  '<div class="k">Clicca per la scheda e l\'elenco dei progetti</div>';
+  '<div class="k">Clicca per la scheda e i fronti di lavoro</div>';
  t.classList.add("on");moveTip(ev);}
 var RNAME={"accordo firmato":"firmato","bozza in negoziazione":"bozza","accordo discusso":"discusso","rapporto dormiente":"dormiente","uscito dalla rete":"uscito"};
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
@@ -298,7 +300,7 @@ function viewMappa(){
  sc.appendChild(buildSvg());
  box.appendChild(sc);
  var h=document.createElement("div"); h.className="maphint";
- h.textContent="Onward al centro. Il colore dice il perimetro, la distanza da Onward dice lo stato dell'accordo: gli accordi firmati sull'anello piu' interno, i rapporti usciti sul bordo. La dimensione del punto dice quanti progetti concreti sono collegati, e il numero esatto compare passando sopra il punto. Un clic apre la scheda, dove ogni fonte porta al contenuto originale in archivio.";
+ h.textContent="Onward al centro. Il colore dice il perimetro, la distanza da Onward dice lo stato dell'accordo: gli accordi firmati sull'anello piu' interno, i rapporti usciti sul bordo. La dimensione del punto dice su quanti fronti si lavora insieme, e il numero esatto compare passando sopra il punto. Un clic apre la scheda, dove ogni fonte porta al contenuto originale in archivio.";
  box.appendChild(h);
  f.appendChild(box);
  return f;
