@@ -45,6 +45,8 @@ a{color:var(--accent)}
 #gate input{width:100%;padding:11px 12px;font-size:16px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--ink-1)}
 #gate button{margin-top:12px;width:100%;padding:11px;font-size:15px;border:0;border-radius:9px;background:var(--accent);color:#fff;cursor:pointer}
 #gate .err{color:#b5462f;font-size:13px;min-height:18px;margin-top:8px}
+#gate .rem{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13.5px;color:var(--ink-2)}
+#gate .rem input{width:auto;margin:0;accent-color:var(--accent)}
 
 header.top{border-bottom:1px solid var(--grid);background:var(--surface);position:sticky;top:0;z-index:20}
 header.top .in{max-width:1120px;margin:0 auto;padding:14px 16px 0}
@@ -145,6 +147,7 @@ details.sch[open]>summary{border-bottom:1px solid var(--grid);background:var(--s
   <h1>Partnership Onward</h1>
   <p>Contenuto cifrato. Inserisci la passphrase dell'archivio.</p>
   <input id="pw" type="password" autocomplete="current-password" placeholder="Passphrase">
+  <label class="rem"><input id="rem" type="checkbox" checked><span>Ricorda su questo dispositivo</span></label>
   <button id="go">Apri</button>
   <div class="err" id="err"></div>
  </div>
@@ -153,7 +156,7 @@ details.sch[open]>summary{border-bottom:1px solid var(--grid);background:var(--s
 <div id="app" class="hide">
 <header class="top"><div class="in">
  <h1 class="title">Partnership Onward</h1>
- <p class="sub" id="subline"></p><p class="sub"><a href="index.html" style="color:var(--onw);text-decoration:none">Torna all&#39;archivio</a></p>
+ <p class="sub" id="subline"></p><p class="sub"><a href="index.html" style="color:var(--onw);text-decoration:none">Torna all&#39;archivio</a> <span style="color:var(--muted)">&middot;</span> <a href="#" id="lockA" style="color:var(--muted);text-decoration:none">Blocca</a></p>
  <nav class="tabs" id="tabs"></nav>
 </div></header>
 <div class="wrap" id="view"></div>
@@ -196,27 +199,49 @@ var RNAME={"accordo firmato":"firmato","bozza in negoziazione":"bozza","accordo 
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 
 function b64bytes(b64){var s=atob(b64),u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;}
-async function unlock(pass){
- var salt=b64bytes(SALT);
- var base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pass),"PBKDF2",false,["deriveKey"]);
- var key=await crypto.subtle.deriveKey({name:"PBKDF2",salt:salt,iterations:ITER,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["decrypt"]);
+var LSK="arch_key";
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
+function bytesB64(u){var s="";for(var i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return btoa(s);}
+
+async function keyFromPass(pass){
+ var base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pass),"PBKDF2",false,["deriveBits"]);
+ var bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:b64bytes(SALT),iterations:ITER,hash:"SHA-256"},base,256);
+ return new Uint8Array(bits);
+}
+async function openWith(kb){
+ var key=await crypto.subtle.importKey("raw",kb,{name:"AES-GCM"},false,["decrypt"]);
  var raw=b64bytes(PAYLOAD);
  var pt=new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:raw.slice(0,12)},key,raw.slice(12)));
  var ds=new DecompressionStream("gzip"); var w=ds.writable.getWriter(); w.write(pt); w.close();
  var txt=await new Response(ds.readable).text();
  return JSON.parse(txt);
 }
+function opened(){
+ document.getElementById("gate").classList.add("hide");
+ document.getElementById("app").classList.remove("hide");
+ boot();
+}
 
 document.getElementById("go").onclick=start;
 document.getElementById("pw").addEventListener("keydown",function(e){if(e.key==="Enter")start();});
 async function start(){
  var e=document.getElementById("err"); e.textContent="Apertura in corso...";
- try{ D=await unlock(document.getElementById("pw").value);
-  document.getElementById("gate").classList.add("hide");
-  document.getElementById("app").classList.remove("hide");
-  boot();
+ try{ var kb=await keyFromPass(document.getElementById("pw").value);
+  D=await openWith(kb);
+  var r=document.getElementById("rem");
+  if(r&&r.checked) lsSet(LSK,bytesB64(kb)); else lsDel(LSK);
+  document.getElementById("pw").value="";
+  opened();
  }catch(x){ e.textContent="Passphrase non valida."; }
 }
+(async function(){
+ var s=lsGet(LSK); if(!s) return;
+ var e=document.getElementById("err"); e.textContent="Apertura automatica dell'archivio...";
+ try{ D=await openWith(b64bytes(s)); opened(); }
+ catch(x){ e.textContent=""; }
+})();
 
 var TABS=[["mappa","Mappa"],["stato","Per stato"],["practice","Per practice"],["schede","Schede"],["sintesi","Che cosa non torna"]];
 var cur="mappa", flt={q:"",st:null,pe:""};
@@ -228,6 +253,8 @@ function boot(){
  var t=document.getElementById("tabs"); t.innerHTML="";
  TABS.forEach(function(x){var b=document.createElement("button");b.textContent=x[1];b.dataset.k=x[0];b.onclick=function(){cur=x[0];render();};t.appendChild(b);});
  document.getElementById("px").onclick=function(){document.getElementById("panel").classList.remove("on");};
+ var la=document.getElementById("lockA");
+ if(la) la.onclick=function(ev){ev.preventDefault();lsDel(LSK);location.reload();};
  document.getElementById("panel").onclick=function(ev){if(ev.target.id==="panel")this.classList.remove("on");};
  render();
 }
