@@ -13,6 +13,7 @@
  --accent:#2a78d6; --accent-soft:#cde2fb; --accent-dark:#1c5cab;
  --mark-bg:#fde9b8; --shadow:0 2px 10px rgba(0,0,0,0.08);
  --s-firm:#0f8f7a; --s-bozza:#2a78d6; --s-disc:#c08a1e; --s-dorm:#898781; --s-out:#b5462f;
+ --p-rete:#1f6f5c; --p-canale:#2a5fa8; --p-esplorazione:#7a4fb5; --p-clienti:#a8761a; --p-fuori:#8a8782;
  --onw:#d2601f;
 }
 @media (prefers-color-scheme: dark){
@@ -24,6 +25,7 @@
   --accent:#6ba8ea; --accent-soft:#1d3a5c; --accent-dark:#9cc6f4;
   --mark-bg:#5b4a17; --shadow:0 2px 12px rgba(0,0,0,0.5);
   --s-firm:#3fbfa6; --s-bozza:#6ba8ea; --s-disc:#e0b44e; --s-dorm:#9b9993; --s-out:#e08063;
+  --p-rete:#3fa98f; --p-canale:#6197e0; --p-esplorazione:#ab8adb; --p-clienti:#d4a44c; --p-fuori:#a7a49e;
   --onw:#f08a45;
  }
 }
@@ -150,6 +152,8 @@ var STCOL={"accordo firmato":"--s-firm","bozza in negoziazione":"--s-bozza","acc
 var STORD=["accordo firmato","bozza in negoziazione","accordo discusso","rapporto dormiente","uscito dalla rete"];
 function cv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()||"#888";}
 function stcol(s){return cv(STCOL[s]||"--s-dorm");}
+function pcol(i){return cv("--p-"+i);}
+var RNAME={"accordo firmato":"firmato","bozza in negoziazione":"bozza","accordo discusso":"discusso","rapporto dormiente":"dormiente","uscito dalla rete":"uscito"};
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 
 function b64bytes(b64){var s=atob(b64),u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;}
@@ -211,12 +215,24 @@ function render(){
  window.scrollTo(0,0);
 }
 
+function legendPer(){
+ var d=document.createElement("div"); d.className="legend";
+ D.perimetri.forEach(function(pe){
+  var n=D.partner.filter(function(p){return p.perimetro===pe.id;}).length;
+  var e=document.createElement("span"); e.className="lg"+(flt.pe&&flt.pe!==pe.id?" off":"");
+  e.innerHTML='<i style="background:'+pcol(pe.id)+'"></i>'+esc(pe.nome)+" ("+n+")";
+  e.onclick=function(){flt.pe=(flt.pe===pe.id?null:pe.id);render();};
+  d.appendChild(e);
+ });
+ return d;
+}
+
 function legend(){
  var d=document.createElement("div"); d.className="legend";
- STORD.forEach(function(s){
+ STORD.forEach(function(s,si){
   var n=D.partner.filter(function(p){return p.stato===s;}).length;
   var e=document.createElement("span"); e.className="lg"+(flt.st&&flt.st!==s?" off":"");
-  e.innerHTML='<i style="background:'+stcol(s)+'"></i>'+esc(s)+" ("+n+")";
+  e.innerHTML='<b style="color:var(--muted);font-weight:700;margin-right:1px">'+(si+1)+'</b> '+esc(s)+" ("+n+")";
   e.onclick=function(){flt.st=(flt.st===s?null:s);render();};
   d.appendChild(e);
  });
@@ -240,13 +256,14 @@ function kpis(){
 function viewMappa(){
  var f=document.createDocumentFragment();
  f.appendChild(kpis());
+ f.appendChild(legendPer());
  f.appendChild(legend());
  var box=document.createElement("div"); box.className="mapbox";
  var sc=document.createElement("div"); sc.className="mapscroll";
  sc.appendChild(buildSvg());
  box.appendChild(sc);
  var h=document.createElement("div"); h.className="maphint";
- h.textContent="Onward al centro. I cinque spicchi sono i perimetri. Il colore dice lo stato dell'accordo, la dimensione quanti progetti concreti sono collegati. Tocca un nodo per la scheda.";
+ h.textContent="Onward al centro. Il colore dice il perimetro, la distanza da Onward dice lo stato dell'accordo: gli accordi firmati sull'anello piu' interno, i rapporti usciti sul bordo. La dimensione del punto dice quanti progetti concreti sono collegati. Tocca un nodo per la scheda.";
  box.appendChild(h);
  f.appendChild(box);
  return f;
@@ -263,25 +280,25 @@ function buildSvg(){
  var rad=function(d){return d*Math.PI/180;};
  function pol(r,d){return [CX+r*Math.cos(rad(d)), CY+r*Math.sin(rad(d))];}
 
- var per=D.perimetri, tot=D.partner.length, gap=8;
- var span=(360-per.length*gap)/tot;
- var first=D.partner.filter(function(p){return p.perimetro===per[0].id;}).length;
- var a=-90-(span*first)/2-gap/2;
- var R0=58, R=228, RL=424;
+ var per=D.perimetri, tot=D.partner.length, gapT=30, gap=6;
+ var span=(360-gapT-gap*(per.length-1))/tot;
+ var RR=[100,140,178,212,244], R0=54, RL=268, RG=420;
+ var a=-90+gapT/2;
+
+ RR.forEach(function(r){
+  svg.appendChild(el("circle",{cx:CX,cy:CY,r:r,fill:"none",stroke:cv("--grid"),"stroke-width":1,"stroke-dasharray":"3 5"}));
+ });
 
  per.forEach(function(pe,gi){
   var list=D.partner.filter(function(p){return p.perimetro===pe.id;});
+  if(!list.length)return;
   var a0=a, a1=a+list.length*span; a=a1+gap;
-  // banda del perimetro
-  var q0=pol(R-30,a0), q1=pol(R-30,a1);
-  svg.appendChild(el("path",{d:"M"+q0[0]+","+q0[1]+" A"+(R-30)+","+(R-30)+" 0 0,1 "+q1[0]+","+q1[1],fill:"none",stroke:cv("--grid"),"stroke-width":7,"stroke-linecap":"round"}));
-  // etichetta su arco esterno
+  var col=pcol(pe.id);
   var mid=(a0+a1)/2, flip=(mid>0&&mid<180);
-  var A0=flip?a1:a0, A1=flip?a0:a1;
-  var p0=pol(RL,A0), p1=pol(RL,A1);
-  var pid="arc"+gi;
-  defs.appendChild(el("path",{id:pid,d:"M"+p0[0]+","+p0[1]+" A"+RL+","+RL+" 0 0,"+(flip?0:1)+" "+p1[0]+","+p1[1],fill:"none"}));
-  var t=el("text",{"font-size":11,"letter-spacing":"1.4","font-weight":700,fill:cv("--muted")});
+  var A0=flip?a1:a0, A1=flip?a0:a1, RA=RG+(flip?13:0);
+  var p0=pol(RA,A0), p1=pol(RA,A1), pid="arc"+gi;
+  defs.appendChild(el("path",{id:pid,d:"M"+p0[0]+","+p0[1]+" A"+RA+","+RA+" 0 0,"+(flip?0:1)+" "+p1[0]+","+p1[1],fill:"none"}));
+  var t=el("text",{"font-size":11,"letter-spacing":"1.4","font-weight":700,fill:col});
   var tp=el("textPath",{startOffset:"50%","text-anchor":"middle"});
   tp.setAttribute("href","#"+pid);
   tp.setAttributeNS("http://www.w3.org/1999/xlink","xlink:href","#"+pid);
@@ -289,15 +306,18 @@ function buildSvg(){
 
   list.forEach(function(p,i){
    var ang=a0+span*(i+0.5);
-   var c=pol(R,ang), s0=pol(R0,ang);
-   var dim=Math.min(15,8.5+(p.progetti||[]).length*1.05);
+   var si=STORD.indexOf(p.stato); if(si<0)si=3;
+   var rr=RR[si];
+   var dim=Math.min(11,6.5+(p.progetti||[]).length*0.8);
    var on=match(p);
-   svg.appendChild(el("line",{x1:s0[0],y1:s0[1],x2:c[0],y2:c[1],stroke:cv("--grid"),"stroke-width":1,opacity:on?0.85:0.18}));
+   var c=pol(rr,ang), s0=pol(R0,ang), e0=pol(rr-dim-2,ang);
+   svg.appendChild(el("line",{x1:s0[0],y1:s0[1],x2:e0[0],y2:e0[1],stroke:col,"stroke-width":1.2,opacity:on?0.5:0.12}));
+   var g0=pol(rr+dim+2,ang), g1=pol(RL-6,ang);
+   svg.appendChild(el("line",{x1:g0[0],y1:g0[1],x2:g1[0],y2:g1[1],stroke:cv("--grid"),"stroke-width":1,opacity:on?0.9:0.2}));
    var g=el("g",{class:"nd",opacity:on?1:0.2});
-   g.appendChild(el("circle",{cx:c[0],cy:c[1],r:dim,fill:stcol(p.stato),stroke:cv("--surface"),"stroke-width":2}));
+   g.appendChild(el("circle",{cx:c[0],cy:c[1],r:dim,fill:col,stroke:cv("--surface"),"stroke-width":2}));
    var left=(Math.cos(rad(ang))<0);
-   var lr=R+dim+9;
-   var lp=pol(lr,ang);
+   var lp=pol(RL,ang);
    var nm=SHORT[p.nome]||p.nome;
    var tt=txt(0,0,nm,{"font-size":12.5,fill:cv("--ink-1"),"text-anchor":left?"end":"start","dominant-baseline":"middle"});
    tt.setAttribute("transform","translate("+lp[0].toFixed(1)+","+lp[1].toFixed(1)+") rotate("+(left?ang+180:ang).toFixed(2)+")");
@@ -306,6 +326,14 @@ function buildSvg(){
    svg.appendChild(g);
   });
  });
+
+ RR.forEach(function(r,i){
+  var tl=txt(CX,CY-r,RNAME[STORD[i]]||STORD[i],{"font-size":9.5,fill:cv("--muted"),"text-anchor":"middle","dominant-baseline":"middle"});
+  tl.setAttribute("stroke",cv("--surface")); tl.setAttribute("stroke-width","3.5");
+  tl.setAttribute("paint-order","stroke"); tl.setAttribute("stroke-linejoin","round");
+  svg.appendChild(tl);
+ });
+
  svg.appendChild(el("circle",{cx:CX,cy:CY,r:50,fill:cv("--onw"),opacity:0.12}));
  svg.appendChild(el("circle",{cx:CX,cy:CY,r:39,fill:cv("--onw")}));
  svg.appendChild(txt(CX,CY+1,"ONWARD",{"font-size":12.5,"font-weight":700,fill:"#fff","text-anchor":"middle"}));
