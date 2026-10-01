@@ -14,6 +14,7 @@
  --mark-bg:#fde9b8; --shadow:0 2px 10px rgba(0,0,0,0.08);
  --s-firm:#0f8f7a; --s-bozza:#2a78d6; --s-disc:#c08a1e; --s-dorm:#898781; --s-out:#b5462f;
  --p-rete:#1f6f5c; --p-canale:#2a5fa8; --p-esplorazione:#7a4fb5; --p-clienti:#a8761a; --p-fuori:#8a8782;
+ --ring:#9b9a94; --ring-lab:#52514e;
  --onw:#d2601f;
 }
 @media (prefers-color-scheme: dark){
@@ -26,6 +27,7 @@
   --mark-bg:#5b4a17; --shadow:0 2px 12px rgba(0,0,0,0.5);
   --s-firm:#3fbfa6; --s-bozza:#6ba8ea; --s-disc:#e0b44e; --s-dorm:#9b9993; --s-out:#e08063;
   --p-rete:#3fa98f; --p-canale:#6197e0; --p-esplorazione:#ab8adb; --p-clienti:#d4a44c; --p-fuori:#a7a49e;
+  --ring:#565651; --ring-lab:#b9b7b1;
   --onw:#f08a45;
  }
 }
@@ -323,7 +325,7 @@ function buildSvg(){
  var a=-90+gapT/2;
 
  RR.forEach(function(r){
-  svg.appendChild(el("circle",{cx:CX,cy:CY,r:r,fill:"none",stroke:cv("--grid"),"stroke-width":1,"stroke-dasharray":"3 5"}));
+  svg.appendChild(el("circle",{cx:CX,cy:CY,r:r,fill:"none",stroke:cv("--ring"),"stroke-width":1.15,"stroke-dasharray":"4 4"}));
  });
 
  per.forEach(function(pe,gi){
@@ -369,7 +371,7 @@ function buildSvg(){
  });
 
  RR.forEach(function(r,i){
-  var tl=txt(CX,CY-r,RNAME[STORD[i]]||STORD[i],{"font-size":9.5,fill:cv("--muted"),"text-anchor":"middle","dominant-baseline":"middle"});
+  var tl=txt(CX,CY-r,RNAME[STORD[i]]||STORD[i],{"font-size":10,"letter-spacing":"0.3",fill:cv("--ring-lab"),"text-anchor":"middle","dominant-baseline":"middle"});
   tl.setAttribute("stroke",cv("--surface")); tl.setAttribute("stroke-width","3.5");
   tl.setAttribute("paint-order","stroke"); tl.setAttribute("stroke-linejoin","round");
   svg.appendChild(tl);
