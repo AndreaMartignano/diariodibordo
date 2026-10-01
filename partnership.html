@@ -105,6 +105,15 @@ details.sch[open]>summary{border-bottom:1px solid var(--grid);background:var(--s
 .q{background:var(--mark-bg);padding:1px 3px;border-radius:3px}
 .src{font-size:12.5px;color:var(--ink-2);border-left:2px solid var(--grid);padding:2px 0 2px 10px;margin-bottom:7px}
 .src code{font-size:11px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace}
+.src a.reclink{display:inline-block;text-decoration:none;color:var(--accent);margin-top:3px}
+.src a.reclink:hover{text-decoration:underline}
+.src a.reclink code{color:inherit}
+#tip{position:fixed;z-index:60;pointer-events:none;max-width:270px;background:var(--surface);color:var(--ink-1);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:9px 11px;font-size:12.5px;line-height:1.38;opacity:0;transition:opacity .1s}
+#tip.on{opacity:1}
+#tip b{display:block;font-size:13.5px;margin-bottom:3px}
+#tip .r{display:flex;align-items:center;gap:6px;color:var(--ink-2)}
+#tip .r i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
+#tip .k{color:var(--muted);margin-top:5px;font-size:11.5px}
 
 .prose h2{font-size:17px;margin:22px 0 5px}
 .prose p{margin:0 0 12px;font-size:15px;color:var(--ink-1);max-width:74ch}
@@ -153,6 +162,20 @@ var STORD=["accordo firmato","bozza in negoziazione","accordo discusso","rapport
 function cv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()||"#888";}
 function stcol(s){return cv(STCOL[s]||"--s-dorm");}
 function pcol(i){return cv("--p-"+i);}
+function perNome(i){var x=(D.perimetri||[]).filter(function(z){return z.id===i;})[0];return x?x.nome:i;}
+function nProg(p){var n=(p.progetti||[]).length;return n===0?"nessun progetto collegato":(n===1?"1 progetto collegato":n+" progetti collegati");}
+function tipEl(){var t=document.getElementById("tip");if(!t){t=document.createElement("div");t.id="tip";document.body.appendChild(t);}return t;}
+function moveTip(ev){var t=tipEl();var x=ev.clientX+15,y=ev.clientY+15,w=t.offsetWidth||230,h=t.offsetHeight||96;
+ if(x+w>window.innerWidth-8)x=Math.max(8,ev.clientX-w-15);
+ if(y+h>window.innerHeight-8)y=Math.max(8,ev.clientY-h-15);
+ t.style.left=x+"px";t.style.top=y+"px";}
+function hideTip(){var t=document.getElementById("tip");if(t)t.classList.remove("on");}
+function showTip(ev,p,col){var t=tipEl(),si=STORD.indexOf(p.stato)+1;
+ t.innerHTML='<b>'+esc(p.nome)+'</b><div class="r"><i style="background:'+col+'"></i>'+esc(perNome(p.perimetro))+'</div>'+
+  '<div class="r">'+esc(p.stato)+(si>0?' (anello '+si+')':'')+'</div>'+
+  '<div class="r">'+esc(nProg(p))+'</div>'+
+  '<div class="k">Clicca per la scheda completa</div>';
+ t.classList.add("on");moveTip(ev);}
 var RNAME={"accordo firmato":"firmato","bozza in negoziazione":"bozza","accordo discusso":"discusso","rapporto dormiente":"dormiente","uscito dalla rete":"uscito"};
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 
@@ -263,7 +286,7 @@ function viewMappa(){
  sc.appendChild(buildSvg());
  box.appendChild(sc);
  var h=document.createElement("div"); h.className="maphint";
- h.textContent="Onward al centro. Il colore dice il perimetro, la distanza da Onward dice lo stato dell'accordo: gli accordi firmati sull'anello piu' interno, i rapporti usciti sul bordo. La dimensione del punto dice quanti progetti concreti sono collegati. Tocca un nodo per la scheda.";
+ h.textContent="Onward al centro. Il colore dice il perimetro, la distanza da Onward dice lo stato dell'accordo: gli accordi firmati sull'anello piu' interno, i rapporti usciti sul bordo. La dimensione del punto dice quanti progetti concreti sono collegati, e il numero esatto compare passando sopra il punto. Un clic apre la scheda, dove ogni fonte porta al contenuto originale in archivio.";
  box.appendChild(h);
  f.appendChild(box);
  return f;
@@ -324,6 +347,9 @@ function buildSvg(){
    tt.setAttribute("transform","translate("+lp[0].toFixed(1)+","+lp[1].toFixed(1)+") rotate("+(left?ang+180:ang).toFixed(2)+")");
    g.appendChild(tt);
    g.onclick=function(){openP(p);};
+   g.onmouseenter=function(ev){showTip(ev,p,col);};
+   g.onmousemove=function(ev){moveTip(ev);};
+   g.onmouseleave=hideTip;
    svg.appendChild(g);
   });
  });
@@ -360,7 +386,7 @@ function viewStato(){
 function cardOf(p){
  var c=document.createElement("div"); c.className="card";
  c.style.borderLeftColor=stcol(p.stato);
- c.innerHTML="<b>"+esc(p.nome)+"</b><p>"+esc(p.riga)+'</p><div class="meta">'+esc(p.categoria)+" · ultima traccia "+esc(p.ultima_traccia)+"</div>";
+ c.innerHTML="<b>"+esc(p.nome)+"</b><p>"+esc(p.riga)+'</p><div class="meta">'+esc(p.categoria)+" · "+esc(nProg(p))+" · ultima traccia "+esc(p.ultima_traccia)+"</div>";
  c.onclick=function(){openP(p);};
  return c;
 }
@@ -441,14 +467,14 @@ function schedaHtml(p){
  h+=fld("Tracce in archivio",p.prima_traccia+" - "+p.ultima_traccia);
  if(p.fonti&&p.fonti.length){
   h+='<dl class="f"><dt>Fonti in archivio ('+p.fonti.length+")</dt><dd>"+p.fonti.map(function(s){
-   return '<div class="src"><span class="q">'+esc(s.q)+'</span><br><code>'+esc(s.rec)+"</code></div>";
+   return '<div class="src"><span class="q">'+esc(s.q)+'</span><br><a class="reclink" href="index.html#rec='+encodeURIComponent(s.rec)+'&q='+encodeURIComponent(s.q)+'" target="_blank" rel="noopener" title="Apre il contenuto originale nell\'archivio"><code>'+esc(s.rec)+'</code> apri nell\'archivio</a></div>';
   }).join("")+"</dd></dl>";
  }
  return h;
 }
 function openP(p){
  document.getElementById("ph").textContent=p.nome;
- document.getElementById("pb").innerHTML='<p><span class="pill st" style="background:'+stcol(p.stato)+'">'+esc(p.stato)+'</span><span class="pill">'+esc(p.categoria)+"</span></p>"+schedaHtml(p);
+ document.getElementById("pb").innerHTML='<p><span class="pill st" style="background:'+stcol(p.stato)+'">'+esc(p.stato)+'</span><span class="pill st" style="background:'+pcol(p.perimetro)+'">'+esc(perNome(p.perimetro))+'</span><span class="pill">'+esc(nProg(p))+"</span></p>"+schedaHtml(p);
  document.getElementById("panel").classList.add("on");
 }
 

@@ -1234,6 +1234,7 @@ async function unlock(keyBytes, remember) {
   $('app').classList.remove('hidden');
   try {
     renderAll();
+    openFromHash();
   } catch (e) {
     document.querySelector('.wrap').innerHTML =
       '<div class="panel"><h2>Errore nella costruzione dell\'interfaccia</h2><div class="note">' +
@@ -3129,6 +3130,18 @@ function relTip() {
    17. VISTA 8 — REPORT
    ========================================================================== */
 let REPORT_FONTI = [];
+function openFromHash() {
+  const h = String(location.hash || '').replace(/^#/, '');
+  if (h.indexOf('rec=') !== 0) return;
+  const m = /^rec=([^&]+)(?:&q=([\s\S]*))?$/.exec(h);
+  if (!m) return;
+  let id = m[1], q = null;
+  try { id = decodeURIComponent(m[1]); } catch (e) {}
+  if (m[2]) { try { q = [decodeURIComponent(m[2])]; } catch (e) { q = [m[2]]; } }
+  const r = resolveRec(id);
+  if (!r) return;
+  setTimeout(function () { try { openDetail(r.id, q); } catch (e) {} }, 80);
+}
 function resolveRec(id) {
   if (!id) return null;
   if (BYID[id]) return BYID[id];
