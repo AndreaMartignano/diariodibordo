@@ -309,6 +309,7 @@ function buildSvg(){
    var si=STORD.indexOf(p.stato); if(si<0)si=3;
    var rr=RR[si];
    var dim=Math.min(11,6.5+(p.progetti||[]).length*0.8);
+   dim=Math.min(dim, rr*span*Math.PI/180*0.46-1.5);
    var on=match(p);
    var c=pol(rr,ang), s0=pol(R0,ang), e0=pol(rr-dim-2,ang);
    svg.appendChild(el("line",{x1:s0[0],y1:s0[1],x2:e0[0],y2:e0[1],stroke:col,"stroke-width":1.2,opacity:on?0.5:0.12}));
